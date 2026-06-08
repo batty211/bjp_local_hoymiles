@@ -6,6 +6,14 @@ The project follows Semantic Versioning. For each GitHub release, copy the
 matching version section into the GitHub Release description so HACS can show
 the release notes to users.
 
+## [0.2.3] - 2026-06-08
+
+### Fixed
+
+- Preserve the latest non-zero daily solar energy values for the same local day
+  when inverters sleep or report zero real-time daily energy, preventing daily
+  energy sensors from dropping back to `0 kWh` before the next day.
+
 ## [0.2.2] - 2026-06-08
 
 ### Fixed
@@ -68,6 +76,7 @@ the release notes to users.
 
 - No control entities, custom services, or write-capable DTU operations.
 
+[0.2.3]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.1.1...v0.2.0

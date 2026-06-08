@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from datetime import UTC, timedelta, tzinfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -21,7 +22,7 @@ from .const import (
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
 )
-from .parser import HoymilesSnapshot
+from .parser import HoymilesSnapshot, preserve_daily_energy_for_same_day
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,6 +42,7 @@ class BjpLocalHoymilesCoordinator(DataUpdateCoordinator[HoymilesSnapshot]):
             entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
         )
         self.client = ReadOnlyHoymilesClient(host=host, port=port)
+        self._timezone = _timezone_from_hass(hass)
 
         super().__init__(
             hass,
@@ -52,6 +54,20 @@ class BjpLocalHoymilesCoordinator(DataUpdateCoordinator[HoymilesSnapshot]):
     async def _async_update_data(self) -> HoymilesSnapshot:
         """Fetch data from the DTU."""
         try:
-            return await self.client.async_get_snapshot()
+            snapshot = await self.client.async_get_snapshot()
         except (CannotConnectError, InvalidResponseError) as err:
             raise UpdateFailed(str(err)) from err
+        return preserve_daily_energy_for_same_day(
+            snapshot,
+            self.data,
+            self._timezone,
+        )
+
+
+def _timezone_from_hass(hass: HomeAssistant) -> tzinfo:
+    if not hass.config.time_zone:
+        return UTC
+    try:
+        return ZoneInfo(hass.config.time_zone)
+    except (TypeError, ZoneInfoNotFoundError):
+        return UTC

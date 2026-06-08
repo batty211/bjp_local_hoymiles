@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import sys
+from datetime import UTC
 from pathlib import Path
 
 FIXTURE = Path(__file__).parent / "fixtures" / "real_data_new.json"
@@ -26,6 +27,14 @@ def load_parser():
 
 def load_payload() -> dict:
     return json.loads(FIXTURE.read_text())
+
+
+def zero_daily_payload() -> dict:
+    payload = load_payload()
+    payload["dtuDailyEnergy"] = "0"
+    for mppt in payload["pvData"]:
+        mppt["energyDaily"] = 0
+    return payload
 
 
 def test_parse_snapshot_scales_payload_values() -> None:
@@ -68,6 +77,41 @@ def test_parse_snapshot_uses_mppt_daily_energy_when_dtu_value_is_missing() -> No
     snapshot = load_parser().parse_snapshot(payload)
 
     assert snapshot.dtu_daily_energy_kwh == 10.62
+
+
+def test_preserve_daily_energy_keeps_same_day_values() -> None:
+    parser = load_parser()
+    previous = parser.parse_snapshot(load_payload())
+    current = parser.parse_snapshot(zero_daily_payload())
+
+    snapshot = parser.preserve_daily_energy_for_same_day(
+        current,
+        previous,
+        UTC,
+    )
+
+    assert snapshot.dtu_daily_energy_kwh == 10.62
+    assert snapshot.inverters[0].daily_energy_kwh == 5.308
+    assert snapshot.inverters[1].daily_energy_kwh == 5.312
+    assert snapshot.mppts[0].daily_energy_kwh == 1.337
+
+
+def test_preserve_daily_energy_allows_next_day_reset() -> None:
+    payload = zero_daily_payload()
+    payload["timestamp"] = payload["timestamp"] + 86400
+    parser = load_parser()
+    previous = parser.parse_snapshot(load_payload())
+    current = parser.parse_snapshot(payload)
+
+    snapshot = parser.preserve_daily_energy_for_same_day(
+        current,
+        previous,
+        UTC,
+    )
+
+    assert snapshot.dtu_daily_energy_kwh == 0.0
+    assert snapshot.inverters[0].daily_energy_kwh == 0.0
+    assert snapshot.mppts[0].daily_energy_kwh == 0.0
 
 
 def test_parse_snapshot_groups_mppt_energy_by_inverter() -> None:

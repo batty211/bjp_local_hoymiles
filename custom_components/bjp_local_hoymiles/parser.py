@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
-from datetime import UTC, datetime
+from dataclasses import dataclass, replace
+from datetime import UTC, datetime, tzinfo
 from typing import Any
 
 
@@ -164,6 +164,98 @@ def parse_snapshot(payload: Mapping[str, Any]) -> HoymilesSnapshot:
         inverters=inverters,
         mppts=mppts,
     )
+
+
+def preserve_daily_energy_for_same_day(
+    snapshot: HoymilesSnapshot,
+    previous: HoymilesSnapshot | None,
+    timezone: tzinfo,
+) -> HoymilesSnapshot:
+    """Keep daily energy from dropping to zero while devices sleep."""
+    if previous is None or not _is_same_day(snapshot, previous, timezone):
+        return snapshot
+
+    previous_inverters = {item.serial: item for item in previous.inverters}
+    previous_mppts = {
+        (item.inverter_serial, item.port_number): item for item in previous.mppts
+    }
+
+    inverters = tuple(
+        replace(
+            inverter,
+            daily_energy_kwh=_preserved_daily_energy(
+                inverter.daily_energy_kwh,
+                _previous_inverter_daily_energy(
+                    previous_inverters,
+                    inverter.serial,
+                ),
+            ),
+        )
+        for inverter in snapshot.inverters
+    )
+    mppts = tuple(
+        replace(
+            mppt,
+            daily_energy_kwh=_preserved_daily_energy(
+                mppt.daily_energy_kwh,
+                _previous_mppt_daily_energy(
+                    previous_mppts,
+                    mppt.inverter_serial,
+                    mppt.port_number,
+                ),
+            ),
+        )
+        for mppt in snapshot.mppts
+    )
+
+    return replace(
+        snapshot,
+        dtu_daily_energy_kwh=_preserved_daily_energy(
+            snapshot.dtu_daily_energy_kwh,
+            previous.dtu_daily_energy_kwh,
+        ),
+        inverters=inverters,
+        mppts=mppts,
+    )
+
+
+def _is_same_day(
+    snapshot: HoymilesSnapshot,
+    previous: HoymilesSnapshot,
+    timezone: tzinfo,
+) -> bool:
+    if snapshot.timestamp is None or previous.timestamp is None:
+        return False
+    return (
+        snapshot.timestamp.astimezone(timezone).date()
+        == previous.timestamp.astimezone(timezone).date()
+    )
+
+
+def _preserved_daily_energy(
+    current: float | None,
+    previous: float | None,
+) -> float | None:
+    if current not in (None, 0.0) or previous in (None, 0.0):
+        return current
+    return previous
+
+
+def _previous_inverter_daily_energy(
+    previous_inverters: Mapping[str, InverterData],
+    serial: str,
+) -> float | None:
+    previous = previous_inverters.get(serial)
+    return previous.daily_energy_kwh if previous is not None else None
+
+
+def _previous_mppt_daily_energy(
+    previous_mppts: Mapping[tuple[str, int], MpptData],
+    inverter_serial: str,
+    port_number: int,
+) -> float | None:
+    previous = previous_mppts.get((inverter_serial, port_number))
+    return previous.daily_energy_kwh if previous is not None else None
 
 
 def _parse_meter(item: Mapping[str, Any]) -> MeterData:
