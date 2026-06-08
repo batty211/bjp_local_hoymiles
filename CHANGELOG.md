@@ -6,6 +6,14 @@ The project follows Semantic Versioning. For each GitHub release, copy the
 matching version section into the GitHub Release description so HACS can show
 the release notes to users.
 
+## [0.2.2] - 2026-06-08
+
+### Fixed
+
+- Use the sum of MPPT daily energy when the DTU daily solar energy aggregate is
+  missing or reported as zero, so the DTU-level daily solar energy sensor shows
+  the day's accumulated production.
+
 ## [0.2.1] - 2026-06-08
 
 ### Added
@@ -60,6 +68,7 @@ the release notes to users.
 
 - No control entities, custom services, or write-capable DTU operations.
 
+[0.2.2]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.1.0...v0.1.1

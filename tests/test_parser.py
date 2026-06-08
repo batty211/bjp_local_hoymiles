@@ -52,6 +52,24 @@ def test_parse_snapshot_scales_payload_values() -> None:
     assert snapshot.home_load_power_w == 1997.1
 
 
+def test_parse_snapshot_uses_mppt_daily_energy_when_dtu_reports_zero() -> None:
+    payload = load_payload()
+    payload["dtuDailyEnergy"] = "0"
+
+    snapshot = load_parser().parse_snapshot(payload)
+
+    assert snapshot.dtu_daily_energy_kwh == 10.62
+
+
+def test_parse_snapshot_uses_mppt_daily_energy_when_dtu_value_is_missing() -> None:
+    payload = load_payload()
+    payload.pop("dtuDailyEnergy")
+
+    snapshot = load_parser().parse_snapshot(payload)
+
+    assert snapshot.dtu_daily_energy_kwh == 10.62
+
+
 def test_parse_snapshot_groups_mppt_energy_by_inverter() -> None:
     snapshot = load_parser().parse_snapshot(load_payload())
 

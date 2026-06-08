@@ -124,8 +124,19 @@ def parse_snapshot(payload: Mapping[str, Any]) -> HoymilesSnapshot:
         for item in payload.get("sgsData", [])
     )
 
+    total_mppt_daily_energy_kwh = (
+        round(sum(mppt_daily_by_inverter.values()), 6)
+        if mppt_daily_by_inverter
+        else None
+    )
     dtu_power_w = _number(payload.get("dtuPower"), 10)
-    dtu_daily_energy_kwh = _number(payload.get("dtuDailyEnergy"), 1000)
+    reported_dtu_daily_energy_kwh = _number(payload.get("dtuDailyEnergy"), 1000)
+    dtu_daily_energy_kwh = (
+        total_mppt_daily_energy_kwh
+        if reported_dtu_daily_energy_kwh in (None, 0.0)
+        and total_mppt_daily_energy_kwh is not None
+        else reported_dtu_daily_energy_kwh
+    )
     lifetime_solar_energy_kwh = (
         round(sum(mppt_lifetime_by_inverter.values()), 6)
         if mppt_lifetime_by_inverter
