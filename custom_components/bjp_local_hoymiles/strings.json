@@ -1,0 +1,78 @@
+{
+  "title": "BJP Local Hoymiles",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add BJP Local Hoymiles",
+        "description": "Connect to a Hoymiles DTU on your local network.",
+        "data": {
+          "host": "IP address or hostname",
+          "port": "TCP port",
+          "scan_interval": "Scan interval"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure BJP Local Hoymiles",
+        "data": {
+          "host": "IP address or hostname",
+          "port": "TCP port",
+          "scan_interval": "Scan interval"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to the DTU.",
+      "invalid_response": "The DTU returned data that could not be parsed."
+    },
+    "abort": {
+      "already_configured": "This DTU is already configured.",
+      "unique_id_mismatch": "The configured DTU serial number does not match the existing entry."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "BJP Local Hoymiles options",
+        "data": {
+          "scan_interval": "Scan interval"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "solar_power": { "name": "Solar power" },
+      "daily_solar_energy": { "name": "Daily solar energy" },
+      "lifetime_solar_energy": { "name": "Lifetime solar energy" },
+      "home_load_power": { "name": "Home load power" },
+      "last_update": { "name": "Last update" },
+      "connection_status": { "name": "Connection status" },
+      "firmware_raw": { "name": "Firmware raw" },
+      "ap": { "name": "AP" },
+      "cp": { "name": "CP" },
+      "grid_import_power": { "name": "Grid import power" },
+      "grid_export_power": { "name": "Grid export power" },
+      "net_grid_power": { "name": "Net grid power" },
+      "voltage": { "name": "Voltage" },
+      "current": { "name": "Current" },
+      "power_factor": { "name": "Power factor" },
+      "lifetime_imported_energy": { "name": "Lifetime imported energy" },
+      "lifetime_exported_energy": { "name": "Lifetime exported energy" },
+      "fault_code": { "name": "Fault code" },
+      "active_power": { "name": "Active power" },
+      "daily_energy": { "name": "Daily energy" },
+      "lifetime_energy": { "name": "Lifetime energy" },
+      "temperature": { "name": "Temperature" },
+      "link_status": { "name": "Link status" },
+      "frequency": { "name": "Frequency" },
+      "signal_strength": { "name": "Signal strength" },
+      "warning_number": { "name": "Warning number" },
+      "mppt_power": { "name": "MPPT {port} power" },
+      "mppt_voltage": { "name": "MPPT {port} voltage" },
+      "mppt_current": { "name": "MPPT {port} current" },
+      "mppt_daily_energy": { "name": "MPPT {port} daily energy" },
+      "mppt_lifetime_energy": { "name": "MPPT {port} lifetime energy" },
+      "error_code": { "name": "MPPT {port} error code" }
+    }
+  }
+}

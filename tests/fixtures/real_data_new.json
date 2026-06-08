@@ -1,0 +1,136 @@
+{
+  "deviceSerialNumber": "4121TEST0001",
+  "timestamp": 1780914430,
+  "ap": 4,
+  "cp": 3,
+  "firmwareVersion": 1,
+  "meterData": [
+    {
+      "deviceType": 1,
+      "serialNumber": "18410000000001",
+      "phaseTotalPower": -177,
+      "phaseAPower": -177,
+      "powerFactorTotal": -938,
+      "energyTotalPower": 536428,
+      "energyPhaseA": 536428,
+      "energyTotalConsumed": 1874437,
+      "energyPhaseAConsumed": 1874437,
+      "faultCode": 1,
+      "voltagePhaseA": 22800,
+      "currentPhaseA": 885,
+      "powerFactorPhaseA": -938
+    }
+  ],
+  "sgsData": [
+    {
+      "serialNumber": "19120000000001",
+      "firmwareVersion": 1,
+      "voltage": 2287,
+      "frequency": 4996,
+      "activePower": 1139,
+      "current": 49,
+      "powerFactor": 1000,
+      "temperature": 350,
+      "warningNumber": 3,
+      "linkStatus": 1,
+      "modulationIndexSignal": -68
+    },
+    {
+      "serialNumber": "19120000000002",
+      "firmwareVersion": 1,
+      "voltage": 2290,
+      "frequency": 4996,
+      "activePower": 1136,
+      "current": 49,
+      "powerFactor": 1000,
+      "temperature": 349,
+      "warningNumber": 2,
+      "linkStatus": 1,
+      "modulationIndexSignal": -71
+    }
+  ],
+  "pvData": [
+    {
+      "serialNumber": "19120000000001",
+      "portNumber": 1,
+      "voltage": 385,
+      "current": 78,
+      "power": 302,
+      "energyTotal": 1962413,
+      "energyDaily": 1337,
+      "errorCode": 50986752
+    },
+    {
+      "serialNumber": "19120000000001",
+      "portNumber": 2,
+      "voltage": 383,
+      "current": 77,
+      "power": 298,
+      "energyTotal": 1950607,
+      "energyDaily": 1314,
+      "errorCode": 50986752
+    },
+    {
+      "serialNumber": "19120000000001",
+      "portNumber": 3,
+      "voltage": 386,
+      "current": 77,
+      "power": 299,
+      "energyTotal": 1965489,
+      "energyDaily": 1326,
+      "errorCode": 50986752
+    },
+    {
+      "serialNumber": "19120000000001",
+      "portNumber": 4,
+      "voltage": 385,
+      "current": 77,
+      "power": 299,
+      "energyTotal": 1965688,
+      "energyDaily": 1331,
+      "errorCode": 50986752
+    },
+    {
+      "serialNumber": "19120000000002",
+      "portNumber": 1,
+      "voltage": 387,
+      "current": 77,
+      "power": 298,
+      "energyTotal": 1957300,
+      "energyDaily": 1331,
+      "errorCode": 50396928
+    },
+    {
+      "serialNumber": "19120000000002",
+      "portNumber": 2,
+      "voltage": 383,
+      "current": 77,
+      "power": 297,
+      "energyTotal": 1951853,
+      "energyDaily": 1323,
+      "errorCode": 50396928
+    },
+    {
+      "serialNumber": "19120000000002",
+      "portNumber": 3,
+      "voltage": 386,
+      "current": 77,
+      "power": 298,
+      "energyTotal": 1956091,
+      "energyDaily": 1324,
+      "errorCode": 50396928
+    },
+    {
+      "serialNumber": "19120000000002",
+      "portNumber": 4,
+      "voltage": 383,
+      "current": 78,
+      "power": 301,
+      "energyTotal": 1955691,
+      "energyDaily": 1334,
+      "errorCode": 50396928
+    }
+  ],
+  "dtuPower": "2271",
+  "dtuDailyEnergy": "10620"
+}

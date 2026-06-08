@@ -1,0 +1,77 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "เพิ่ม BJP Local Hoymiles",
+        "description": "เชื่อมต่อ Hoymiles DTU ผ่านเครือข่ายภายใน",
+        "data": {
+          "host": "IP address หรือ hostname",
+          "port": "TCP port",
+          "scan_interval": "ช่วงเวลาอ่านข้อมูล"
+        }
+      },
+      "reconfigure": {
+        "title": "ตั้งค่า BJP Local Hoymiles ใหม่",
+        "data": {
+          "host": "IP address หรือ hostname",
+          "port": "TCP port",
+          "scan_interval": "ช่วงเวลาอ่านข้อมูล"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "เชื่อมต่อ DTU ไม่สำเร็จ",
+      "invalid_response": "DTU ส่งข้อมูลที่แปลผลไม่ได้"
+    },
+    "abort": {
+      "already_configured": "DTU นี้ถูกเพิ่มไว้แล้ว",
+      "unique_id_mismatch": "Serial number ของ DTU ไม่ตรงกับรายการเดิม"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ตัวเลือก BJP Local Hoymiles",
+        "data": {
+          "scan_interval": "ช่วงเวลาอ่านข้อมูล"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "solar_power": { "name": "กำลังผลิต Solar" },
+      "daily_solar_energy": { "name": "พลังงาน Solar วันนี้" },
+      "lifetime_solar_energy": { "name": "พลังงาน Solar สะสม" },
+      "home_load_power": { "name": "โหลดบ้าน" },
+      "last_update": { "name": "อัปเดตล่าสุด" },
+      "connection_status": { "name": "สถานะการเชื่อมต่อ" },
+      "grid_import_power": { "name": "กำลังไฟนำเข้าจากกริด" },
+      "grid_export_power": { "name": "กำลังไฟส่งออกไปกริด" },
+      "net_grid_power": { "name": "กำลังไฟสุทธิของกริด" },
+      "voltage": { "name": "แรงดันไฟ" },
+      "current": { "name": "กระแสไฟ" },
+      "power_factor": { "name": "Power factor" },
+      "lifetime_imported_energy": { "name": "พลังงานนำเข้าสะสม" },
+      "lifetime_exported_energy": { "name": "พลังงานส่งออกสะสม" },
+      "active_power": { "name": "กำลังไฟปัจจุบัน" },
+      "daily_energy": { "name": "พลังงานวันนี้" },
+      "lifetime_energy": { "name": "พลังงานสะสม" },
+      "temperature": { "name": "อุณหภูมิ" },
+      "link_status": { "name": "สถานะลิงก์" },
+      "frequency": { "name": "ความถี่" },
+      "signal_strength": { "name": "ความแรงสัญญาณ" },
+      "warning_number": { "name": "หมายเลขเตือน" },
+      "mppt_power": { "name": "กำลังไฟ MPPT {port}" },
+      "mppt_voltage": { "name": "แรงดัน MPPT {port}" },
+      "mppt_current": { "name": "กระแส MPPT {port}" },
+      "mppt_daily_energy": { "name": "พลังงาน MPPT {port} วันนี้" },
+      "mppt_lifetime_energy": { "name": "พลังงาน MPPT {port} สะสม" },
+      "error_code": { "name": "Error code MPPT {port}" },
+      "fault_code": { "name": "Fault code" },
+      "firmware_raw": { "name": "Firmware raw" },
+      "ap": { "name": "AP" },
+      "cp": { "name": "CP" }
+    }
+  }
+}

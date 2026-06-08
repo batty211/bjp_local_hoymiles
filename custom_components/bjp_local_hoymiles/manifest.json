@@ -1,0 +1,12 @@
+{
+  "domain": "bjp_local_hoymiles",
+  "name": "BJP Local Hoymiles",
+  "after_dependencies": [],
+  "codeowners": ["@bordin"],
+  "config_flow": true,
+  "documentation": "https://github.com/bordin/bjp_local_hoymiles",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/bordin/bjp_local_hoymiles/issues",
+  "requirements": ["hoymiles-wifi==0.5.6"],
+  "version": "0.1.1"
+}

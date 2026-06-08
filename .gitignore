@@ -1,0 +1,40 @@
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+target/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Test and tool caches
+.coverage
+coverage/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+
+# Runtime data
+data/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+logs/
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
