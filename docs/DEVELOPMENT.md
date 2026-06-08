@@ -7,8 +7,9 @@ The project is a Home Assistant custom integration installed through HACS.
 ## Prerequisites
 
 - Git
-- Python 3.12 or the Python version used by the target Home Assistant release
-- `pytest` for unit tests
+- Miniconda environment `hoymiles`
+- Python 3.12
+- `hoymiles-wifi==0.5.6`, pytest, Ruff and mypy from `environment.yml`
 - Home Assistant test dependencies for full config-flow/platform tests
 - A Hoymiles DTU-Pro-S on the local network for live validation
 
@@ -16,11 +17,16 @@ The project is a Home Assistant custom integration installed through HACS.
 
 | Task | Command |
 | --- | --- |
+| Create Miniconda environment | `conda env create -f environment.yml` |
+| Update Miniconda environment | `conda env update -n hoymiles -f environment.yml --prune` |
 | Install runtime dependency | Managed by Home Assistant from `manifest.json` |
-| Run parser and safety tests | `python3 -m pytest -q` |
-| Run syntax check | `python3 -m compileall -q custom_components tests` |
-| Run lint checks | `python3 -m ruff check .` |
-| Run type/static checks | `python3 -m mypy custom_components/bjp_local_hoymiles` |
+| Run lightweight checks | `conda run -n hoymiles python tools/run_checks.py` |
+| Test a saved payload | `conda run -n hoymiles python tools/dtu_monitor.py --fixture tests/fixtures/real_data_new.json` |
+| Test a live DTU | `conda run -n hoymiles python tools/dtu_monitor.py --host DTU_IP --watch` |
+| Run pytest suite | `conda run -n hoymiles python -m pytest -q` |
+| Run syntax check | `conda run -n hoymiles python -m compileall -q custom_components tests tools` |
+| Run lint checks | `conda run -n hoymiles python -m ruff check .` |
+| Run type/static checks | `conda run -n hoymiles python -m mypy custom_components/bjp_local_hoymiles` |
 | Build release | Tag a GitHub release for HACS users |
 
 Do not merge implementation work while its required command remains undocumented.

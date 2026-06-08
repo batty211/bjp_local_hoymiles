@@ -60,17 +60,75 @@ firmware update, turn inverter on/off, performance mode หรือ energy-stor
 
 ## Development
 
+โปรเจกต์ใช้ Miniconda environment ชื่อ `hoymiles` เป็นหลัก หากมี environment
+นี้อยู่แล้ว:
+
 ```bash
-python3 -m pytest -q
-python3 -m compileall -q custom_components tests
+conda activate hoymiles
+python tools/run_checks.py
 ```
 
-เครื่อง development ปัจจุบันอาจต้องติดตั้ง `pytest` และ Home Assistant test
-dependencies เพิ่มก่อนรัน test suite เต็ม
+หรือสั่งจาก environment อื่นโดยไม่ต้อง activate:
+
+```bash
+conda run -n hoymiles python tools/run_checks.py
+```
+
+สร้างหรืออัปเดต environment จากไฟล์ของโปรเจกต์:
+
+```bash
+conda env create -f environment.yml
+conda env update -n hoymiles -f environment.yml --prune
+```
+
+ตรวจ parser, safety, version และไฟล์ทั้งหมดโดยไม่ต้องติดตั้ง Home Assistant
+หรือ pytest:
+
+```bash
+conda run -n hoymiles python tools/run_checks.py
+```
+
+ทดลองแสดงผลจาก fixture:
+
+```bash
+conda run -n hoymiles python tools/dtu_monitor.py \
+  --fixture tests/fixtures/real_data_new.json
+```
+
+ทดลองกับ DTU จริง:
+
+```bash
+conda run -n hoymiles python tools/dtu_monitor.py \
+  --host 192.168.30.213
+```
+
+ดูค่าต่อเนื่องทุก 35 วินาที กด `Ctrl+C` เพื่อหยุด:
+
+```bash
+conda run -n hoymiles python tools/dtu_monitor.py \
+  --host 192.168.30.213 --watch
+```
+
+ดู normalized snapshot แบบ JSON:
+
+```bash
+conda run -n hoymiles python tools/dtu_monitor.py \
+  --host 192.168.30.213 --json
+```
+
+เครื่องมือนี้เรียกเฉพาะ `async_get_real_data_new()` และไม่ต้องเปิด Home
+Assistant ส่วนการทดสอบ Config Flow, Entity Registry และ HACS installation
+ยังต้องตรวจใน Home Assistant ก่อน release จริงหนึ่งรอบ
+
+ใน VSCode ให้เลือก Python Interpreter เป็น:
+
+```text
+/Users/bordin/miniconda3/envs/hoymiles/bin/python
+```
 
 ## Version and Releases
 
-- Version ปัจจุบัน: `0.1.1`
+- Version ปัจจุบัน: `0.2.1`
 - ใช้ version จาก `custom_components/bjp_local_hoymiles/manifest.json`
 - ทุกการเปลี่ยนแปลงต้องเพิ่ม version และอัปเดต `CHANGELOG.md`
 - ตอนเผยแพร่ ให้สร้าง GitHub Release จาก tag รูปแบบ `vX.Y.Z` และใช้เนื้อหาของ
@@ -88,6 +146,7 @@ dependencies เพิ่มก่อนรัน test suite เต็ม
 | `docs/DEVELOPMENT.md` | workflow สำหรับพัฒนา ทดสอบ และส่งมอบ |
 | `docs/decisions/` | Architecture Decision Records (ADRs) |
 | `CHANGELOG.md` | Version history และ GitHub/HACS release notes |
+| `environment.yml` | Miniconda development environment |
 
 ## เริ่มต้นพัฒนาเอกสาร
 

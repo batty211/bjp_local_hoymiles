@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import json
 import importlib.util
-from pathlib import Path
+import json
 import sys
+from pathlib import Path
 
 FIXTURE = Path(__file__).parent / "fixtures" / "real_data_new.json"
 PARSER = (

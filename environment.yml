@@ -1,0 +1,11 @@
+name: hoymiles
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      - hoymiles-wifi==0.5.6
+      - mypy
+      - pytest
+      - ruff

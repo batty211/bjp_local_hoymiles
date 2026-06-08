@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any, Mapping
+from typing import Any
 
 
 def _number(value: Any, scale: float = 1.0) -> float | None:
@@ -211,9 +212,13 @@ def _parse_inverter(
 
 
 def _parse_mppt(item: Mapping[str, Any]) -> MpptData:
+    port_number = _int(item.get("portNumber"))
+    if port_number is None:
+        raise ValueError("MPPT payload is missing portNumber")
+
     return MpptData(
         inverter_serial=_serial(item.get("serialNumber")),
-        port_number=int(item.get("portNumber")),
+        port_number=port_number,
         voltage_v=_number(item.get("voltage"), 10),
         current_a=_number(item.get("current"), 100),
         power_w=_number(item.get("power"), 10),

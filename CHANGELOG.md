@@ -6,6 +6,31 @@ The project follows Semantic Versioning. For each GitHub release, copy the
 matching version section into the GitHub Release description so HACS can show
 the release notes to users.
 
+## [0.2.1] - 2026-06-08
+
+### Added
+
+- Added a reproducible Miniconda environment with Python 3.12,
+  `hoymiles-wifi`, pytest, Ruff, and mypy.
+- Documented Miniconda commands for lightweight checks, fixture tests, and
+  direct live DTU monitoring.
+
+### Verified
+
+- Completed a read-only live test against a DTU-Pro-S on TCP port `10081`.
+- Confirmed meter, two inverter, and eight MPPT records are normalized and
+  displayed without running Home Assistant.
+
+## [0.2.0] - 2026-06-08
+
+### Added
+
+- Added a standalone read-only DTU terminal monitor for testing normalized
+  sensor values without running Home Assistant.
+- Added fixture and live DTU modes, JSON output, and a 35-second watch mode.
+- Added a lightweight check runner that does not require pytest or Home
+  Assistant dependencies.
+
 ## [0.1.1] - 2026-06-08
 
 ### Added
@@ -35,5 +60,7 @@ the release notes to users.
 
 - No control entities, custom services, or write-capable DTU operations.
 
+[0.2.1]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/bordin/bjp_local_hoymiles/releases/tag/v0.1.0

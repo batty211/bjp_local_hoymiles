@@ -29,9 +29,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
-    ATTR_DTU_SERIAL,
     ATTR_INVERTER_SERIAL,
-    ATTR_METER_SERIAL,
     ATTR_PORT_NUMBER,
     DOMAIN,
     MANUFACTURER,
@@ -342,7 +340,10 @@ def _meter_entities(
             entity_registry_enabled_default=False,
         ),
     )
-    return [BjpLocalHoymilesSensor(coordinator, description) for description in descriptions]
+    return [
+        BjpLocalHoymilesSensor(coordinator, description)
+        for description in descriptions
+    ]
 
 
 def _inverter_entities(
@@ -453,7 +454,10 @@ def _inverter_entities(
             entity_registry_enabled_default=False,
         ),
     )
-    return [BjpLocalHoymilesSensor(coordinator, description) for description in descriptions]
+    return [
+        BjpLocalHoymilesSensor(coordinator, description)
+        for description in descriptions
+    ]
 
 
 def _mppt_entities(
@@ -533,7 +537,10 @@ def _mppt_entities(
             },
         ),
     )
-    return [BjpLocalHoymilesSensor(coordinator, description) for description in descriptions]
+    return [
+        BjpLocalHoymilesSensor(coordinator, description)
+        for description in descriptions
+    ]
 
 
 def _link_status(inverter: InverterData | None) -> str | None:

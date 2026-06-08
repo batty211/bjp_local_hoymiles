@@ -11,7 +11,11 @@ from homeassistant.const import CONF_HOST
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 
-from .client import CannotConnectError, InvalidResponseError, ReadOnlyHoymilesClient
+from .client import (
+    CannotConnectError,
+    InvalidResponseError,
+    ReadOnlyHoymilesClient,
+)
 from .const import (
     CONF_PORT,
     CONF_SCAN_INTERVAL,
@@ -43,7 +47,10 @@ def _schema(defaults: dict[str, Any] | None = None) -> vol.Schema:
     )
 
 
-class BjpLocalHoymilesConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class BjpLocalHoymilesConfigFlow(  # type: ignore[call-arg]
+    config_entries.ConfigFlow,
+    domain=DOMAIN,
+):
     """Handle a BJP Local Hoymiles config flow."""
 
     VERSION = 1
