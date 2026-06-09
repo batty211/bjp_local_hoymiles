@@ -50,6 +50,9 @@ S-Miles Cloud is not used for runtime data collection.
 
 - Shows current production, daily energy, lifetime energy, grid power, load,
   device state, and last update.
+- Exposes cumulative grid import, grid export, solar production, solar
+  self-consumption, and total home consumption sensors for Energy Dashboard
+  selection.
 - Distinguishes zero production from missing or stale data.
 - Uses explicit units and local timezone.
 

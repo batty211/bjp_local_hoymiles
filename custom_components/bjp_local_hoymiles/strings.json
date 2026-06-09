@@ -44,6 +44,8 @@
       "solar_power": { "name": "Solar power" },
       "daily_solar_energy": { "name": "Daily solar energy" },
       "lifetime_solar_energy": { "name": "Lifetime solar energy" },
+      "solar_self_consumed_energy": { "name": "Solar self-consumed energy" },
+      "home_consumption_energy": { "name": "Home consumption energy" },
       "home_load_power": { "name": "Home load power" },
       "last_update": { "name": "Last update" },
       "connection_status": { "name": "Connection status" },

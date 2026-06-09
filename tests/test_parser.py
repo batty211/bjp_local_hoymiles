@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import logging
 import sys
+from contextlib import contextmanager
 from datetime import UTC
 from pathlib import Path
 
@@ -37,6 +39,26 @@ def zero_daily_payload() -> dict:
     return payload
 
 
+@contextmanager
+def capture_parser_warnings() -> list[str]:
+    logger = logging.getLogger("bjp_local_hoymiles_parser")
+    messages: list[str] = []
+
+    class _Handler(logging.Handler):
+        def emit(self, record: logging.LogRecord) -> None:
+            messages.append(record.getMessage())
+
+    handler = _Handler()
+    previous_level = logger.level
+    logger.addHandler(handler)
+    logger.setLevel(logging.WARNING)
+    try:
+        yield messages
+    finally:
+        logger.removeHandler(handler)
+        logger.setLevel(previous_level)
+
+
 def test_parse_snapshot_scales_payload_values() -> None:
     snapshot = load_parser().parse_snapshot(load_payload())
 
@@ -44,6 +66,8 @@ def test_parse_snapshot_scales_payload_values() -> None:
     assert snapshot.dtu_power_w == 227.1
     assert snapshot.dtu_daily_energy_kwh == 10.62
     assert snapshot.lifetime_solar_energy_kwh == 15665.132
+    assert snapshot.solar_self_consumed_energy_kwh == 15128.704
+    assert snapshot.home_consumption_energy_kwh == 17003.141
     assert len(snapshot.meters) == 1
     assert len(snapshot.inverters) == 2
     assert len(snapshot.mppts) == 8
@@ -59,6 +83,30 @@ def test_parse_snapshot_scales_payload_values() -> None:
     assert meter.lifetime_imported_energy_kwh == 1874.437
 
     assert snapshot.home_load_power_w == 1997.1
+
+
+def test_parse_snapshot_clamps_negative_derived_energy() -> None:
+    payload = load_payload()
+    payload["meterData"][0]["energyTotalPower"] = 20_000_000
+
+    with capture_parser_warnings() as messages:
+        snapshot = load_parser().parse_snapshot(payload)
+
+    assert snapshot.solar_self_consumed_energy_kwh == 0.0
+    assert snapshot.home_consumption_energy_kwh == 1874.437
+    assert any("solar self-consumed energy went negative" in message for message in messages)
+
+
+def test_parse_snapshot_clamps_negative_home_load_power() -> None:
+    payload = load_payload()
+    payload["meterData"][0]["phaseTotalPower"] = 30_000
+    payload["meterData"][0]["phaseAPower"] = 30_000
+
+    with capture_parser_warnings() as messages:
+        snapshot = load_parser().parse_snapshot(payload)
+
+    assert snapshot.home_load_power_w == 0.0
+    assert any("home load power went negative" in message for message in messages)
 
 
 def test_parse_snapshot_uses_mppt_daily_energy_when_dtu_reports_zero() -> None:

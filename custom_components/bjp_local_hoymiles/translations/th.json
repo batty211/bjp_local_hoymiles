@@ -43,6 +43,8 @@
       "solar_power": { "name": "กำลังผลิต Solar" },
       "daily_solar_energy": { "name": "พลังงาน Solar วันนี้" },
       "lifetime_solar_energy": { "name": "พลังงาน Solar สะสม" },
+      "solar_self_consumed_energy": { "name": "พลังงาน Solar ที่ใช้เองสะสม" },
+      "home_consumption_energy": { "name": "พลังงานที่บ้านใช้สะสม" },
       "home_load_power": { "name": "โหลดบ้าน" },
       "last_update": { "name": "อัปเดตล่าสุด" },
       "connection_status": { "name": "สถานะการเชื่อมต่อ" },

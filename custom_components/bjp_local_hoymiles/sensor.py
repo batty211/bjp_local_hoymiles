@@ -56,6 +56,7 @@ def _energy_description(
     translation_key: str,
     value_fn: ValueFn,
     device_key: str,
+    state_class: SensorStateClass = SensorStateClass.TOTAL_INCREASING,
     enabled: bool = True,
     translation_placeholders: dict[str, str] | None = None,
 ) -> HoymilesSensorDescription:
@@ -64,7 +65,7 @@ def _energy_description(
         translation_key=translation_key,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=state_class,
         value_fn=value_fn,
         device_key=device_key,
         entity_registry_enabled_default=enabled,
@@ -115,6 +116,21 @@ DTU_DESCRIPTIONS: tuple[HoymilesSensorDescription, ...] = (
         "lifetime_solar_energy",
         lambda data: data.lifetime_solar_energy_kwh,
         "dtu",
+        SensorStateClass.TOTAL,
+    ),
+    _energy_description(
+        "solar_self_consumed_energy",
+        "solar_self_consumed_energy",
+        lambda data: data.solar_self_consumed_energy_kwh,
+        "dtu",
+        SensorStateClass.TOTAL,
+    ),
+    _energy_description(
+        "home_consumption_energy",
+        "home_consumption_energy",
+        lambda data: data.home_consumption_energy_kwh,
+        "dtu",
+        SensorStateClass.TOTAL,
     ),
     _measurement_description(
         "home_load_power",
@@ -322,6 +338,7 @@ def _meter_entities(
                 m.lifetime_imported_energy_kwh if (m := select(data)) else None
             ),
             device_key,
+            SensorStateClass.TOTAL,
         ),
         _energy_description(
             f"{meter.serial}_lifetime_exported_energy",
@@ -330,6 +347,7 @@ def _meter_entities(
                 m.lifetime_exported_energy_kwh if (m := select(data)) else None
             ),
             device_key,
+            SensorStateClass.TOTAL,
         ),
         HoymilesSensorDescription(
             key=f"{meter.serial}_fault_code",
@@ -378,6 +396,7 @@ def _inverter_entities(
             "lifetime_energy",
             lambda data: (i.lifetime_energy_kwh if (i := select(data)) else None),
             device_key,
+            SensorStateClass.TOTAL,
         ),
         _measurement_description(
             f"{inverter.serial}_voltage",
@@ -520,6 +539,7 @@ def _mppt_entities(
             "mppt_lifetime_energy",
             lambda data: (p.lifetime_energy_kwh if (p := select(data)) else None),
             device_key,
+            SensorStateClass.TOTAL,
             enabled=False,
             translation_placeholders=placeholders,
         ),

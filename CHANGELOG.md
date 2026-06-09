@@ -6,6 +6,20 @@ The project follows Semantic Versioning. For each GitHub release, copy the
 matching version section into the GitHub Release description so HACS can show
 the release notes to users.
 
+## [0.3.0] - 2026-06-09
+
+### Added
+
+- Added cumulative energy sensors for solar self-consumption and total home
+  consumption so Home Assistant Energy Dashboard can show grid import, solar
+  production, and source split without requiring manual helper entities.
+
+### Changed
+
+- Marked lifetime energy entities as `total` state class where appropriate so
+  Home Assistant can treat long-term values as cumulative totals.
+- Documented the recommended Energy Dashboard entity mapping in the README.
+
 ## [0.2.3] - 2026-06-08
 
 ### Fixed
@@ -76,6 +90,7 @@ the release notes to users.
 
 - No control entities, custom services, or write-capable DTU operations.
 
+[0.3.0]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.2.3...v0.3.0
 [0.2.3]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.2.0...v0.2.1

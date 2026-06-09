@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime, tzinfo
 from typing import Any
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def _number(value: Any, scale: float = 1.0) -> float | None:
@@ -94,6 +97,8 @@ class HoymilesSnapshot:
     dtu_power_w: float | None
     dtu_daily_energy_kwh: float | None
     lifetime_solar_energy_kwh: float | None
+    solar_self_consumed_energy_kwh: float | None
+    home_consumption_energy_kwh: float | None
     home_load_power_w: float | None
     meters: tuple[MeterData, ...]
     inverters: tuple[InverterData, ...]
@@ -144,11 +149,66 @@ def parse_snapshot(payload: Mapping[str, Any]) -> HoymilesSnapshot:
     )
 
     primary_meter = meters[0] if meters else None
+    lifetime_imported_energy_kwh = (
+        primary_meter.lifetime_imported_energy_kwh
+        if primary_meter is not None
+        else None
+    )
+    lifetime_exported_energy_kwh = (
+        primary_meter.lifetime_exported_energy_kwh
+        if primary_meter is not None
+        else None
+    )
+    solar_self_consumed_energy_kwh = None
+    if (
+        lifetime_solar_energy_kwh is not None
+        and lifetime_exported_energy_kwh is not None
+    ):
+        solar_self_consumed_energy_kwh = round(
+            lifetime_solar_energy_kwh - lifetime_exported_energy_kwh,
+            6,
+        )
+        if solar_self_consumed_energy_kwh < 0:
+            _LOGGER.warning(
+                "Derived solar self-consumed energy went negative; "
+                "clamping to zero (solar=%s kWh, export=%s kWh)",
+                lifetime_solar_energy_kwh,
+                lifetime_exported_energy_kwh,
+            )
+            solar_self_consumed_energy_kwh = 0.0
+
+    home_consumption_energy_kwh = None
+    if (
+        solar_self_consumed_energy_kwh is not None
+        and lifetime_imported_energy_kwh is not None
+    ):
+        home_consumption_energy_kwh = round(
+            solar_self_consumed_energy_kwh + lifetime_imported_energy_kwh,
+            6,
+        )
+        if home_consumption_energy_kwh < 0:
+            _LOGGER.warning(
+                "Derived home consumption energy went negative; clamping to zero "
+                "(solar_self_consumed=%s kWh, grid_import=%s kWh)",
+                solar_self_consumed_energy_kwh,
+                lifetime_imported_energy_kwh,
+            )
+            home_consumption_energy_kwh = 0.0
+
     home_load_power_w = None
     if dtu_power_w is not None and primary_meter is not None:
         import_w = primary_meter.grid_import_power_w or 0.0
         export_w = primary_meter.grid_export_power_w or 0.0
         home_load_power_w = round(dtu_power_w + import_w - export_w, 6)
+        if home_load_power_w < 0:
+            _LOGGER.warning(
+                "Derived home load power went negative; clamping to zero "
+                "(solar=%s W, grid_import=%s W, grid_export=%s W)",
+                dtu_power_w,
+                import_w,
+                export_w,
+            )
+            home_load_power_w = 0.0
 
     return HoymilesSnapshot(
         dtu_serial=_serial(payload.get("deviceSerialNumber")),
@@ -159,6 +219,8 @@ def parse_snapshot(payload: Mapping[str, Any]) -> HoymilesSnapshot:
         dtu_power_w=dtu_power_w,
         dtu_daily_energy_kwh=dtu_daily_energy_kwh,
         lifetime_solar_energy_kwh=lifetime_solar_energy_kwh,
+        solar_self_consumed_energy_kwh=solar_self_consumed_energy_kwh,
+        home_consumption_energy_kwh=home_consumption_energy_kwh,
         home_load_power_w=home_load_power_w,
         meters=meters,
         inverters=inverters,
