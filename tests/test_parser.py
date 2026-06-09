@@ -39,6 +39,14 @@ def zero_daily_payload() -> dict:
     return payload
 
 
+def zero_meter_payload() -> dict:
+    payload = load_payload()
+    meter = payload["meterData"][0]
+    meter["energyTotalConsumed"] = 0
+    meter["energyTotalPower"] = 0
+    return payload
+
+
 @contextmanager
 def capture_parser_warnings() -> list[str]:
     logger = logging.getLogger("bjp_local_hoymiles_parser")
@@ -163,6 +171,91 @@ def test_preserve_daily_energy_allows_next_day_reset() -> None:
     assert snapshot.dtu_daily_energy_kwh == 0.0
     assert snapshot.inverters[0].daily_energy_kwh == 0.0
     assert snapshot.mppts[0].daily_energy_kwh == 0.0
+
+
+def test_preserve_meter_lifetime_keeps_same_serial_values() -> None:
+    parser = load_parser()
+    previous = parser.parse_snapshot(load_payload())
+    current = parser.parse_snapshot(zero_meter_payload())
+
+    snapshot = parser.preserve_meter_lifetime_energy(current, previous)
+
+    assert snapshot.meters[0].lifetime_imported_energy_kwh == 1874.437
+    assert snapshot.meters[0].lifetime_exported_energy_kwh == 536.428
+    assert snapshot.solar_self_consumed_energy_kwh == 15128.704
+    assert snapshot.home_consumption_energy_kwh == 17003.141
+
+
+def test_preserve_meter_lifetime_uses_current_positive_values() -> None:
+    payload = load_payload()
+    payload["meterData"][0]["energyTotalConsumed"] = 1877719
+    payload["meterData"][0]["energyTotalPower"] = 536430
+    parser = load_parser()
+    previous = parser.parse_snapshot(load_payload())
+    current = parser.parse_snapshot(payload)
+
+    snapshot = parser.preserve_meter_lifetime_energy(current, previous)
+
+    assert snapshot.meters[0].lifetime_imported_energy_kwh == 1877.719
+    assert snapshot.meters[0].lifetime_exported_energy_kwh == 536.43
+
+
+def test_preserve_meter_lifetime_tracks_serials_separately() -> None:
+    payload = load_payload()
+    payload["meterData"] = [
+        {
+            **payload["meterData"][0],
+            "serialNumber": "18417181655590",
+            "energyTotalConsumed": 0,
+            "energyTotalPower": 0,
+        },
+        {
+            **payload["meterData"][0],
+            "serialNumber": "18417181655591",
+            "energyTotalConsumed": 0,
+            "energyTotalPower": 0,
+        },
+    ]
+
+    previous_payload = load_payload()
+    previous_payload["meterData"] = [
+        {
+            **previous_payload["meterData"][0],
+            "serialNumber": "18417181655590",
+            "energyTotalConsumed": 1877437,
+            "energyTotalPower": 536428,
+        },
+        {
+            **previous_payload["meterData"][0],
+            "serialNumber": "18417181655592",
+            "energyTotalConsumed": 1999000,
+            "energyTotalPower": 123456,
+        },
+    ]
+
+    parser = load_parser()
+    previous = parser.parse_snapshot(previous_payload)
+    current = parser.parse_snapshot(payload)
+
+    snapshot = parser.preserve_meter_lifetime_energy(current, previous)
+
+    assert snapshot.meters[0].serial == "18417181655590"
+    assert snapshot.meters[0].lifetime_imported_energy_kwh == 1877.437
+    assert snapshot.meters[0].lifetime_exported_energy_kwh == 536.428
+    assert snapshot.meters[1].serial == "18417181655591"
+    assert snapshot.meters[1].lifetime_imported_energy_kwh == 0.0
+    assert snapshot.meters[1].lifetime_exported_energy_kwh == 0.0
+
+
+def test_preserve_meter_lifetime_keeps_derived_energy_from_bouncing() -> None:
+    parser = load_parser()
+    previous = parser.parse_snapshot(load_payload())
+    current = parser.parse_snapshot(zero_meter_payload())
+
+    snapshot = parser.preserve_meter_lifetime_energy(current, previous)
+
+    assert snapshot.solar_self_consumed_energy_kwh == 15128.704
+    assert snapshot.home_consumption_energy_kwh == 17003.141
 
 
 def test_parse_snapshot_groups_mppt_energy_by_inverter() -> None:

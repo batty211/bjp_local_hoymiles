@@ -42,6 +42,9 @@ S-Miles Cloud is not used for runtime data collection.
 - Persists same-day daily energy cache per config entry so a restart or reload
   does not collapse daily energy sensors back to zero when the DTU reports a
   temporary zero snapshot.
+- Preserves meter lifetime import/export values for the same meter serial
+  during transient zero snapshots, then recomputes derived cumulative energy
+  from the preserved totals before publishing the snapshot.
 
 ### Application
 
@@ -89,6 +92,9 @@ Vendor-specific fields should be retained only when they have a defined use.
 - Restart: resume collection without requiring manual cleanup.
 - Temporary zero daily-energy snapshots must not overwrite same-day cached
   values once the integration has seen a valid non-zero reading for that day.
+- Temporary zero meter lifetime snapshots must not overwrite the previous
+  non-zero value for the same meter serial while the coordinator still has a
+  prior snapshot to compare against.
 
 ## Security Boundaries
 

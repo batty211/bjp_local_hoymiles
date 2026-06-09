@@ -29,7 +29,7 @@ from .daily_energy import (
     restore_daily_energy_cache,
     serialize_daily_energy_cache,
 )
-from .parser import HoymilesSnapshot
+from .parser import HoymilesSnapshot, preserve_meter_lifetime_energy
 
 _LOGGER = logging.getLogger(__name__)
 _DAILY_ENERGY_STORE_VERSION = 1
@@ -82,6 +82,10 @@ class BjpLocalHoymilesCoordinator(DataUpdateCoordinator[HoymilesSnapshot]):
             snapshot,
             self._daily_energy_cache,
             self._timezone,
+        )
+        restored_snapshot = preserve_meter_lifetime_energy(
+            restored_snapshot,
+            self.data,
         )
         if updated_cache != self._daily_energy_cache:
             self._daily_energy_cache = updated_cache

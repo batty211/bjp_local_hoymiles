@@ -281,6 +281,93 @@ def preserve_daily_energy_for_same_day(
     )
 
 
+def preserve_meter_lifetime_energy(
+    snapshot: HoymilesSnapshot,
+    previous: HoymilesSnapshot | None,
+) -> HoymilesSnapshot:
+    """Keep meter lifetime energy from dropping to zero during transient failures."""
+    if previous is None:
+        return snapshot
+
+    previous_meters = {item.serial: item for item in previous.meters}
+    meters = tuple(
+        replace(
+            meter,
+            lifetime_imported_energy_kwh=_preserved_lifetime_energy(
+                meter.lifetime_imported_energy_kwh,
+                _previous_meter_lifetime_energy(
+                    previous_meters,
+                    meter.serial,
+                    "lifetime_imported_energy_kwh",
+                ),
+            ),
+            lifetime_exported_energy_kwh=_preserved_lifetime_energy(
+                meter.lifetime_exported_energy_kwh,
+                _previous_meter_lifetime_energy(
+                    previous_meters,
+                    meter.serial,
+                    "lifetime_exported_energy_kwh",
+                ),
+            ),
+        )
+        for meter in snapshot.meters
+    )
+
+    primary_meter = meters[0] if meters else None
+    lifetime_imported_energy_kwh = (
+        primary_meter.lifetime_imported_energy_kwh
+        if primary_meter is not None
+        else None
+    )
+    lifetime_exported_energy_kwh = (
+        primary_meter.lifetime_exported_energy_kwh
+        if primary_meter is not None
+        else None
+    )
+    solar_self_consumed_energy_kwh = None
+    if (
+        snapshot.lifetime_solar_energy_kwh is not None
+        and lifetime_exported_energy_kwh is not None
+    ):
+        solar_self_consumed_energy_kwh = round(
+            snapshot.lifetime_solar_energy_kwh - lifetime_exported_energy_kwh,
+            6,
+        )
+        if solar_self_consumed_energy_kwh < 0:
+            _LOGGER.warning(
+                "Derived solar self-consumed energy went negative; "
+                "clamping to zero (solar=%s kWh, export=%s kWh)",
+                snapshot.lifetime_solar_energy_kwh,
+                lifetime_exported_energy_kwh,
+            )
+            solar_self_consumed_energy_kwh = 0.0
+
+    home_consumption_energy_kwh = None
+    if (
+        solar_self_consumed_energy_kwh is not None
+        and lifetime_imported_energy_kwh is not None
+    ):
+        home_consumption_energy_kwh = round(
+            solar_self_consumed_energy_kwh + lifetime_imported_energy_kwh,
+            6,
+        )
+        if home_consumption_energy_kwh < 0:
+            _LOGGER.warning(
+                "Derived home consumption energy went negative; clamping to zero "
+                "(solar_self_consumed=%s kWh, grid_import=%s kWh)",
+                solar_self_consumed_energy_kwh,
+                lifetime_imported_energy_kwh,
+            )
+            home_consumption_energy_kwh = 0.0
+
+    return replace(
+        snapshot,
+        meters=meters,
+        solar_self_consumed_energy_kwh=solar_self_consumed_energy_kwh,
+        home_consumption_energy_kwh=home_consumption_energy_kwh,
+    )
+
+
 def _is_same_day(
     snapshot: HoymilesSnapshot,
     previous: HoymilesSnapshot,
@@ -318,6 +405,28 @@ def _previous_mppt_daily_energy(
 ) -> float | None:
     previous = previous_mppts.get((inverter_serial, port_number))
     return previous.daily_energy_kwh if previous is not None else None
+
+
+def _preserved_lifetime_energy(
+    current: float | None,
+    previous: float | None,
+) -> float | None:
+    if current is not None and current > 0:
+        return current
+    if previous is not None and previous > 0:
+        return previous
+    return current
+
+
+def _previous_meter_lifetime_energy(
+    previous_meters: Mapping[str, MeterData],
+    serial: str,
+    attribute: str,
+) -> float | None:
+    previous = previous_meters.get(serial)
+    if previous is None:
+        return None
+    return getattr(previous, attribute)
 
 
 def _parse_meter(item: Mapping[str, Any]) -> MeterData:
