@@ -1,0 +1,154 @@
+views:
+  - type: sections
+    max_columns: 4
+    title: POWER MONITOR 2026
+    path: power-monitor-2026
+    icon: mdi:solar-power
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: ภาพรวมขณะนี้
+          - type: gauge
+            name: กำลังผลิต Solar
+            entity: sensor.bjp_local_hoymiles_dtu_solar_power
+            min: 0
+            max: 5000
+            needle: true
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                name: โหลดบ้าน
+                entity: sensor.bjp_local_hoymiles_dtu_home_load_power
+                icon: mdi:home-lightning-bolt
+              - type: tile
+                name: นำเข้าจากกริด
+                entity: sensor.hoymiles_meter_18417181655590_grid_import_power
+                icon: mdi:transmission-tower-import
+              - type: tile
+                name: ส่งออกไปกริด
+                entity: sensor.hoymiles_meter_18417181655590_grid_export_power
+                icon: mdi:transmission-tower-export
+              - type: tile
+                name: กำลังไฟสุทธิของกริด
+                entity: sensor.hoymiles_meter_18417181655590_net_grid_power
+                icon: mdi:transmission-tower
+              - type: tile
+                name: สถานะ DTU
+                entity: sensor.bjp_local_hoymiles_dtu_connection_status
+                icon: mdi:lan-connect
+      - type: grid
+        cards:
+          - type: heading
+            heading: ช่วงวันที่เลือก
+          - type: energy-date-selection
+            collection_key: energy_power_monitor_2026
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: statistic
+                name: ผลิต Solar
+                entity: sensor.bjp_local_hoymiles_dtu_lifetime_solar_energy
+                stat_type: change
+                period: energy_date_selection
+                collection_key: energy_power_monitor_2026
+                icon: mdi:solar-power-variant
+              - type: statistic
+                name: ใช้เองสะสม
+                entity: sensor.bjp_local_hoymiles_dtu_solar_self_consumed_energy
+                stat_type: change
+                period: energy_date_selection
+                collection_key: energy_power_monitor_2026
+                icon: mdi:home-lightning-bolt
+              - type: statistic
+                name: บ้านใช้สะสม
+                entity: sensor.bjp_local_hoymiles_dtu_home_consumption_energy
+                stat_type: change
+                period: energy_date_selection
+                collection_key: energy_power_monitor_2026
+                icon: mdi:home-battery
+              - type: statistic
+                name: นำเข้ากริด
+                entity: sensor.hoymiles_meter_18417181655590_lifetime_imported_energy
+                stat_type: change
+                period: energy_date_selection
+                collection_key: energy_power_monitor_2026
+                icon: mdi:transmission-tower-import
+              - type: statistic
+                name: ส่งออกกริด
+                entity: sensor.hoymiles_meter_18417181655590_lifetime_exported_energy
+                stat_type: change
+                period: energy_date_selection
+                collection_key: energy_power_monitor_2026
+                icon: mdi:transmission-tower-export
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                name: ผลิตวันนี้
+                entity: sensor.bjp_local_hoymiles_dtu_daily_solar_energy
+                icon: mdi:solar-power-variant
+              - type: tile
+                name: ผลิตสะสมทั้งหมด
+                entity: sensor.bjp_local_hoymiles_dtu_lifetime_solar_energy
+                icon: mdi:counter
+      - type: grid
+        cards:
+          - type: heading
+            heading: Meter
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                name: แรงดันไฟ
+                entity: sensor.hoymiles_meter_18417181655590_voltage
+                icon: mdi:sine-wave
+              - type: tile
+                name: กระแสไฟ
+                entity: sensor.hoymiles_meter_18417181655590_current
+                icon: mdi:current-ac
+              - type: tile
+                name: Power Factor
+                entity: sensor.hoymiles_meter_18417181655590_power_factor
+                icon: mdi:angle-acute
+              - type: tile
+                name: อัปเดตล่าสุด
+                entity: sensor.bjp_local_hoymiles_dtu_last_update
+                icon: mdi:clock-sync
+      - type: grid
+        cards:
+          - type: heading
+            heading: กราฟตามช่วงวันที่เลือก
+          - type: custom:energy-custom-graph-card
+            title: ผลิต / โหลด / กริด
+            collection_key: energy_power_monitor_2026
+            series:
+              - statistic_id: sensor.bjp_local_hoymiles_dtu_solar_power
+                name: ผลิต Solar
+                stat_type: state
+                chart_type: line
+              - statistic_id: sensor.bjp_local_hoymiles_dtu_home_load_power
+                name: โหลดบ้าน
+                stat_type: state
+                chart_type: line
+              - statistic_id: sensor.hoymiles_meter_18417181655590_net_grid_power
+                name: Grid Net
+                stat_type: state
+                chart_type: line
+          - type: custom:energy-custom-graph-card
+            title: Import / Export Grid
+            collection_key: energy_power_monitor_2026
+            series:
+              - statistic_id: sensor.hoymiles_meter_18417181655590_grid_import_power
+                name: นำเข้าจากกริด
+                stat_type: state
+                chart_type: line
+              - statistic_id: sensor.hoymiles_meter_18417181655590_grid_export_power
+                name: ส่งออกไปกริด
+                stat_type: state
+                chart_type: line

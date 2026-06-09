@@ -6,6 +6,34 @@ The project follows Semantic Versioning. For each GitHub release, copy the
 matching version section into the GitHub Release description so HACS can show
 the release notes to users.
 
+## [0.3.2] - 2026-06-09
+
+### Added
+
+- Upgraded the dashboard example to use the Energy date selection card plus a
+  custom graph card so users can choose a day or time range and have the
+  charts follow that selection.
+
+### Changed
+
+- Reworked the selected-period summary cards so the dashboard now reflects the
+  active date range instead of only showing fixed live history.
+- Documented the custom frontend resource required for the app-like graph
+  experience.
+
+## [0.3.1] - 2026-06-09
+
+### Added
+
+- Added an app-inspired Lovelace dashboard example under `docs/examples/`
+  that organizes live solar power, home load, meter details, and 24-hour
+  history graphs into a layout closer to the Hoymiles app.
+
+### Changed
+
+- Documented the dashboard example in the README and bumped the release version
+  to match the new docs asset.
+
 ## [0.3.0] - 2026-06-09
 
 ### Added
@@ -90,6 +118,8 @@ the release notes to users.
 
 - No control entities, custom services, or write-capable DTU operations.
 
+[0.3.2]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.1...v0.3.2
+[0.3.1]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.2.3...v0.3.0
 [0.2.3]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.2.1...v0.2.2
