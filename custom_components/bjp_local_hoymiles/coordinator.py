@@ -29,10 +29,17 @@ from .daily_energy import (
     restore_daily_energy_cache,
     serialize_daily_energy_cache,
 )
+from .meter_lifetime import (
+    MeterLifetimeCache,
+    deserialize_meter_lifetime_cache,
+    restore_meter_lifetime_cache,
+    serialize_meter_lifetime_cache,
+)
 from .parser import HoymilesSnapshot, preserve_meter_lifetime_energy
 
 _LOGGER = logging.getLogger(__name__)
 _DAILY_ENERGY_STORE_VERSION = 1
+_METER_LIFETIME_STORE_VERSION = 1
 
 
 class BjpLocalHoymilesCoordinator(DataUpdateCoordinator[HoymilesSnapshot]):
@@ -57,6 +64,12 @@ class BjpLocalHoymilesCoordinator(DataUpdateCoordinator[HoymilesSnapshot]):
             f"{DOMAIN}.daily_energy_cache_{entry.entry_id}",
         )
         self._daily_energy_cache: DailyEnergyCache | None = None
+        self._meter_lifetime_store = Store(
+            hass,
+            _METER_LIFETIME_STORE_VERSION,
+            f"{DOMAIN}.meter_lifetime_cache_{entry.entry_id}",
+        )
+        self._meter_lifetime_cache: MeterLifetimeCache | None = None
 
         super().__init__(
             hass,
@@ -66,9 +79,12 @@ class BjpLocalHoymilesCoordinator(DataUpdateCoordinator[HoymilesSnapshot]):
         )
 
     async def async_initialize(self) -> None:
-        """Load persisted daily energy cache before polling starts."""
+        """Load persisted energy caches before polling starts."""
         self._daily_energy_cache = deserialize_daily_energy_cache(
             await self._daily_energy_store.async_load(),
+        )
+        self._meter_lifetime_cache = deserialize_meter_lifetime_cache(
+            await self._meter_lifetime_store.async_load(),
         )
 
     async def _async_update_data(self) -> HoymilesSnapshot:
@@ -87,16 +103,28 @@ class BjpLocalHoymilesCoordinator(DataUpdateCoordinator[HoymilesSnapshot]):
             restored_snapshot,
             self.data,
         )
+        restored_snapshot, updated_meter_cache = restore_meter_lifetime_cache(
+            restored_snapshot,
+            self._meter_lifetime_cache,
+        )
         if updated_cache != self._daily_energy_cache:
             self._daily_energy_cache = updated_cache
-            if updated_cache is None:
-                return restored_snapshot
-            try:
-                await self._daily_energy_store.async_save(
-                    serialize_daily_energy_cache(updated_cache),
-                )
-            except Exception:  # pragma: no cover - best effort persistence
-                _LOGGER.exception("Failed to save daily energy cache")
+            if updated_cache is not None:
+                try:
+                    await self._daily_energy_store.async_save(
+                        serialize_daily_energy_cache(updated_cache),
+                    )
+                except Exception:  # pragma: no cover - best effort persistence
+                    _LOGGER.exception("Failed to save daily energy cache")
+        if updated_meter_cache != self._meter_lifetime_cache:
+            self._meter_lifetime_cache = updated_meter_cache
+            if updated_meter_cache is not None:
+                try:
+                    await self._meter_lifetime_store.async_save(
+                        serialize_meter_lifetime_cache(updated_meter_cache),
+                    )
+                except Exception:  # pragma: no cover - best effort persistence
+                    _LOGGER.exception("Failed to save meter lifetime cache")
         return restored_snapshot
 
 

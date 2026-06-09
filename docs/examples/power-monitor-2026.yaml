@@ -8,7 +8,7 @@ views:
       - type: grid
         cards:
           - type: heading
-            heading: ภาพรวมขณะนี้
+            heading: ภาพรวมตอนนี้
           - type: gauge
             name: กำลังผลิต Solar
             entity: sensor.bjp_local_hoymiles_dtu_solar_power
@@ -24,11 +24,11 @@ views:
                 entity: sensor.bjp_local_hoymiles_dtu_home_load_power
                 icon: mdi:home-lightning-bolt
               - type: tile
-                name: นำเข้าจากกริด
+                name: นำเข้าจาก กฟน.
                 entity: sensor.hoymiles_meter_18417181655590_grid_import_power
                 icon: mdi:transmission-tower-import
               - type: tile
-                name: ส่งออกไปกริด
+                name: ส่งออกไป
                 entity: sensor.hoymiles_meter_18417181655590_grid_export_power
                 icon: mdi:transmission-tower-export
               - type: tile
@@ -42,47 +42,40 @@ views:
       - type: grid
         cards:
           - type: heading
-            heading: ช่วงวันที่เลือก
+            heading: การใช้พลังงานวันนี้
           - type: energy-date-selection
-            collection_key: energy_power_monitor_2026
+            collection_key: energy_today_monitor_2026
           - type: grid
             columns: 2
             square: false
             cards:
               - type: statistic
-                name: ผลิต Solar
-                entity: sensor.bjp_local_hoymiles_dtu_lifetime_solar_energy
-                stat_type: change
-                period: energy_date_selection
-                collection_key: energy_power_monitor_2026
-                icon: mdi:solar-power-variant
-              - type: statistic
-                name: ใช้เองสะสม
-                entity: sensor.bjp_local_hoymiles_dtu_solar_self_consumed_energy
-                stat_type: change
-                period: energy_date_selection
-                collection_key: energy_power_monitor_2026
-                icon: mdi:home-lightning-bolt
-              - type: statistic
-                name: บ้านใช้สะสม
+                name: โหลดบ้านทั้งวัน
                 entity: sensor.bjp_local_hoymiles_dtu_home_consumption_energy
                 stat_type: change
                 period: energy_date_selection
-                collection_key: energy_power_monitor_2026
-                icon: mdi:home-battery
+                collection_key: energy_today_monitor_2026
+                icon: mdi:home
               - type: statistic
-                name: นำเข้ากริด
+                name: ซื้อไฟจาก กฟน.
                 entity: sensor.hoymiles_meter_18417181655590_lifetime_imported_energy
                 stat_type: change
                 period: energy_date_selection
-                collection_key: energy_power_monitor_2026
+                collection_key: energy_today_monitor_2026
                 icon: mdi:transmission-tower-import
               - type: statistic
-                name: ส่งออกกริด
+                name: ผลิตใช้เอง
+                entity: sensor.bjp_local_hoymiles_dtu_solar_self_consumed_energy
+                stat_type: change
+                period: energy_date_selection
+                collection_key: energy_today_monitor_2026
+                icon: mdi:home-lightning-bolt
+              - type: statistic
+                name: ผลิตแล้วไม่ได้ใช้
                 entity: sensor.hoymiles_meter_18417181655590_lifetime_exported_energy
                 stat_type: change
                 period: energy_date_selection
-                collection_key: energy_power_monitor_2026
+                collection_key: energy_today_monitor_2026
                 icon: mdi:transmission-tower-export
           - type: grid
             columns: 2
@@ -99,11 +92,105 @@ views:
       - type: grid
         cards:
           - type: heading
-            heading: Meter
+            heading: การใช้พลังงานรอบบิลนี้
+          - type: energy-date-selection
+            collection_key: energy_billing_monitor_2026
           - type: grid
             columns: 2
             square: false
             cards:
+              - type: statistic
+                name: โหลดบ้านรอบบิล
+                entity: sensor.bjp_local_hoymiles_dtu_home_consumption_energy
+                stat_type: change
+                period: energy_date_selection
+                collection_key: energy_billing_monitor_2026
+                icon: mdi:home
+              - type: statistic
+                name: ซื้อไฟรอบบิล
+                entity: sensor.hoymiles_meter_18417181655590_lifetime_imported_energy
+                stat_type: change
+                period: energy_date_selection
+                collection_key: energy_billing_monitor_2026
+                icon: mdi:transmission-tower-import
+              - type: statistic
+                name: ผลิตใช้เองรอบบิล
+                entity: sensor.bjp_local_hoymiles_dtu_solar_self_consumed_energy
+                stat_type: change
+                period: energy_date_selection
+                collection_key: energy_billing_monitor_2026
+                icon: mdi:home-lightning-bolt
+              - type: statistic
+                name: ผลิตแล้วไม่ได้ใช้รอบบิล
+                entity: sensor.hoymiles_meter_18417181655590_lifetime_exported_energy
+                stat_type: change
+                period: energy_date_selection
+                collection_key: energy_billing_monitor_2026
+                icon: mdi:transmission-tower-export
+          - type: tile
+            name: รอบบิลที่เลือก
+            entity: sensor.hoymiles_meter_18417181655590_lifetime_imported_energy
+            icon: mdi:calendar-range
+      - type: grid
+        cards:
+          - type: heading
+            heading: สรุปการใช้พลังงานทั้งปี
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: statistic
+                name: โหลดบ้านทั้งปี
+                entity: sensor.bjp_local_hoymiles_dtu_home_consumption_energy
+                stat_type: change
+                period:
+                  calendar:
+                    period: year
+                    offset: 0
+                icon: mdi:home
+              - type: statistic
+                name: ซื้อไฟทั้งปี
+                entity: sensor.hoymiles_meter_18417181655590_lifetime_imported_energy
+                stat_type: change
+                period:
+                  calendar:
+                    period: year
+                    offset: 0
+                icon: mdi:transmission-tower-import
+              - type: statistic
+                name: ผลิตเองใช้เองทั้งปี
+                entity: sensor.bjp_local_hoymiles_dtu_solar_self_consumed_energy
+                stat_type: change
+                period:
+                  calendar:
+                    period: year
+                    offset: 0
+                icon: mdi:home-lightning-bolt
+              - type: statistic
+                name: ผลิตแล้วไม่ได้ใช้ทั้งปี
+                entity: sensor.hoymiles_meter_18417181655590_lifetime_exported_energy
+                stat_type: change
+                period:
+                  calendar:
+                    period: year
+                    offset: 0
+                icon: mdi:transmission-tower-export
+      - type: grid
+        cards:
+          - type: heading
+            heading: สถานะ Meter
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                name: นำเข้ารวม
+                entity: sensor.hoymiles_meter_18417181655590_lifetime_imported_energy
+                icon: mdi:counter
+              - type: tile
+                name: ส่งออกรวม
+                entity: sensor.hoymiles_meter_18417181655590_lifetime_exported_energy
+                icon: mdi:counter
               - type: tile
                 name: แรงดันไฟ
                 entity: sensor.hoymiles_meter_18417181655590_voltage
@@ -117,31 +204,47 @@ views:
                 entity: sensor.hoymiles_meter_18417181655590_power_factor
                 icon: mdi:angle-acute
               - type: tile
-                name: อัปเดตล่าสุด
-                entity: sensor.bjp_local_hoymiles_dtu_last_update
-                icon: mdi:clock-sync
+                name: กำลังไฟสุทธิ
+                entity: sensor.hoymiles_meter_18417181655590_net_grid_power
+                icon: mdi:transmission-tower
+      - type: grid
+        cards:
+          - type: heading
+            heading: สรุปสถานะ
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                name: ผลิตมาทั้งหมดแล้วเท่าไร
+                entity: sensor.bjp_local_hoymiles_dtu_lifetime_solar_energy
+                icon: mdi:solar-power-variant
+              - type: tile
+                name: ผลิตแล้วไม่ได้ใช้เท่าไร
+                entity: sensor.hoymiles_meter_18417181655590_lifetime_exported_energy
+                icon: mdi:transmission-tower-export
       - type: grid
         cards:
           - type: heading
             heading: กราฟตามช่วงวันที่เลือก
           - type: statistics-graph
-            title: ผลิต / โหลด / กริด
-            collection_key: energy_power_monitor_2026
+            title: โหลดบ้าน / นำเข้า / ส่งออก
+            collection_key: energy_today_monitor_2026
             energy_date_selection: true
             period: auto
             chart_type: line
             stat_types:
               - mean
             entities:
-              - entity: sensor.bjp_local_hoymiles_dtu_solar_power
-                name: ผลิต Solar
               - entity: sensor.bjp_local_hoymiles_dtu_home_load_power
                 name: โหลดบ้าน
-              - entity: sensor.hoymiles_meter_18417181655590_net_grid_power
-                name: Grid Net
+              - entity: sensor.hoymiles_meter_18417181655590_grid_import_power
+                name: นำเข้าจาก กฟน.
+              - entity: sensor.hoymiles_meter_18417181655590_grid_export_power
+                name: ส่งออกไป
           - type: statistics-graph
-            title: Import / Export Grid
-            collection_key: energy_power_monitor_2026
+            title: Import Export grid
+            collection_key: energy_today_monitor_2026
             energy_date_selection: true
             period: auto
             chart_type: line
@@ -149,6 +252,6 @@ views:
               - mean
             entities:
               - entity: sensor.hoymiles_meter_18417181655590_grid_import_power
-                name: นำเข้าจากกริด
+                name: นำเข้าจาก กฟน.
               - entity: sensor.hoymiles_meter_18417181655590_grid_export_power
-                name: ส่งออกไปกริด
+                name: ส่งออกไป

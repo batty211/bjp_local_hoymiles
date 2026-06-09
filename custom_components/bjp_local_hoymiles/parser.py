@@ -313,6 +313,14 @@ def preserve_meter_lifetime_energy(
         for meter in snapshot.meters
     )
 
+    return rebuild_meter_derived_energy(snapshot, meters)
+
+
+def rebuild_meter_derived_energy(
+    snapshot: HoymilesSnapshot,
+    meters: tuple[MeterData, ...],
+) -> HoymilesSnapshot:
+    """Recalculate meter-derived cumulative energy after meter preservation."""
     primary_meter = meters[0] if meters else None
     lifetime_imported_energy_kwh = (
         primary_meter.lifetime_imported_energy_kwh

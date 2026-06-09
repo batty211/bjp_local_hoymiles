@@ -6,6 +6,21 @@ The project follows Semantic Versioning. For each GitHub release, copy the
 matching version section into the GitHub Release description so HACS can show
 the release notes to users.
 
+## [0.3.6] - 2026-06-09
+
+### Fixed
+
+- Preserved meter lifetime import/export values across restart and reload
+  gaps by persisting the last non-zero reading per meter serial, preventing a
+  transient first-poll `0.0` from leaking into Home Assistant cumulative
+  statistics.
+
+### Changed
+
+- Recomputed meter-derived cumulative energy after restoring the persisted
+  meter lifetime cache so solar self-consumed energy and home consumption stay
+  aligned with the restored meter totals.
+
 ## [0.3.5] - 2026-06-09
 
 ### Fixed
@@ -19,6 +34,9 @@ the release notes to users.
 - Recalculated derived cumulative energy after meter lifetime preservation so
   solar self-consumed energy and home consumption stay aligned with the
   restored meter totals.
+- Refreshed the dashboard example to show realtime, daily, billing, yearly,
+  meter status, summary, and selected-range graph sections aligned with the new
+  meter and derived energy entities.
 
 ## [0.3.4] - 2026-06-09
 
@@ -161,6 +179,7 @@ the release notes to users.
 
 - No control entities, custom services, or write-capable DTU operations.
 
+[0.3.6]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.5...v0.3.6
 [0.3.3]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.2...v0.3.3
 [0.3.5]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.3...v0.3.4

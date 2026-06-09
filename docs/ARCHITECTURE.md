@@ -45,6 +45,9 @@ S-Miles Cloud is not used for runtime data collection.
 - Preserves meter lifetime import/export values for the same meter serial
   during transient zero snapshots, then recomputes derived cumulative energy
   from the preserved totals before publishing the snapshot.
+- Persists meter lifetime import/export cache per config entry so the first
+  successful poll after restart or reload can restore a transient zero reading
+  before Home Assistant records it.
 
 ### Application
 
@@ -95,6 +98,8 @@ Vendor-specific fields should be retained only when they have a defined use.
 - Temporary zero meter lifetime snapshots must not overwrite the previous
   non-zero value for the same meter serial while the coordinator still has a
   prior snapshot to compare against.
+- Temporary zero meter lifetime snapshots on the first successful poll after a
+  restart must be restored from the persisted per-entry cache when available.
 
 ## Security Boundaries
 

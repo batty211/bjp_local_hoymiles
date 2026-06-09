@@ -14,7 +14,6 @@ EXPECTED_ENTITIES = {
     "sensor.bjp_local_hoymiles_dtu_lifetime_solar_energy",
     "sensor.bjp_local_hoymiles_dtu_solar_self_consumed_energy",
     "sensor.bjp_local_hoymiles_dtu_home_consumption_energy",
-    "sensor.bjp_local_hoymiles_dtu_last_update",
     "sensor.hoymiles_meter_18417181655590_grid_import_power",
     "sensor.hoymiles_meter_18417181655590_grid_export_power",
     "sensor.hoymiles_meter_18417181655590_net_grid_power",
@@ -50,9 +49,12 @@ def test_dashboard_example_references_expected_entities() -> None:
 def test_dashboard_example_uses_app_like_layout_sections() -> None:
     dashboard = DASHBOARD.read_text()
 
-    assert "heading: ภาพรวมขณะนี้" in dashboard
-    assert "heading: ช่วงวันที่เลือก" in dashboard
-    assert "heading: Meter" in dashboard
+    assert "heading: ภาพรวมตอนนี้" in dashboard
+    assert "heading: การใช้พลังงานวันนี้" in dashboard
+    assert "heading: การใช้พลังงานรอบบิลนี้" in dashboard
+    assert "heading: สรุปการใช้พลังงานทั้งปี" in dashboard
+    assert "heading: สถานะ Meter" in dashboard
     assert "heading: กราฟตามช่วงวันที่เลือก" in dashboard
-    assert "title: ผลิต / โหลด / กริด" in dashboard
-    assert "title: Import / Export Grid" in dashboard
+    assert "heading: สรุปสถานะ" in dashboard
+    assert "title: โหลดบ้าน / นำเข้า / ส่งออก" in dashboard
+    assert "title: Import Export grid" in dashboard
