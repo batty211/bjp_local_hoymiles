@@ -6,6 +6,21 @@ The project follows Semantic Versioning. For each GitHub release, copy the
 matching version section into the GitHub Release description so HACS can show
 the release notes to users.
 
+## [0.3.3] - 2026-06-09
+
+### Fixed
+
+- Replaced the custom graph card in the dashboard example with core
+  `statistics-graph` cards so the selected-day and selected-range views render
+  against Home Assistant statistics without depending on an extra frontend
+  plugin.
+
+### Changed
+
+- Kept the date picker, selected-period summary cards, and app-like layout, but
+  simplified the graph layer to the native card that matches the data model
+  used by this integration.
+
 ## [0.3.2] - 2026-06-09
 
 ### Added
@@ -118,6 +133,7 @@ the release notes to users.
 
 - No control entities, custom services, or write-capable DTU operations.
 
+[0.3.3]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.2.3...v0.3.0

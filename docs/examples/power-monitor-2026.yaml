@@ -124,31 +124,31 @@ views:
         cards:
           - type: heading
             heading: กราฟตามช่วงวันที่เลือก
-          - type: custom:energy-custom-graph-card
+          - type: statistics-graph
             title: ผลิต / โหลด / กริด
             collection_key: energy_power_monitor_2026
-            series:
-              - statistic_id: sensor.bjp_local_hoymiles_dtu_solar_power
+            energy_date_selection: true
+            period: auto
+            chart_type: line
+            stat_types:
+              - mean
+            entities:
+              - entity: sensor.bjp_local_hoymiles_dtu_solar_power
                 name: ผลิต Solar
-                stat_type: state
-                chart_type: line
-              - statistic_id: sensor.bjp_local_hoymiles_dtu_home_load_power
+              - entity: sensor.bjp_local_hoymiles_dtu_home_load_power
                 name: โหลดบ้าน
-                stat_type: state
-                chart_type: line
-              - statistic_id: sensor.hoymiles_meter_18417181655590_net_grid_power
+              - entity: sensor.hoymiles_meter_18417181655590_net_grid_power
                 name: Grid Net
-                stat_type: state
-                chart_type: line
-          - type: custom:energy-custom-graph-card
+          - type: statistics-graph
             title: Import / Export Grid
             collection_key: energy_power_monitor_2026
-            series:
-              - statistic_id: sensor.hoymiles_meter_18417181655590_grid_import_power
+            energy_date_selection: true
+            period: auto
+            chart_type: line
+            stat_types:
+              - mean
+            entities:
+              - entity: sensor.hoymiles_meter_18417181655590_grid_import_power
                 name: นำเข้าจากกริด
-                stat_type: state
-                chart_type: line
-              - statistic_id: sensor.hoymiles_meter_18417181655590_grid_export_power
+              - entity: sensor.hoymiles_meter_18417181655590_grid_export_power
                 name: ส่งออกไปกริด
-                stat_type: state
-                chart_type: line

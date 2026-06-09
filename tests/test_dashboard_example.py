@@ -30,7 +30,7 @@ def test_dashboard_example_uses_energy_date_selection_and_custom_graph() -> None
     dashboard = DASHBOARD.read_text()
 
     assert "type: energy-date-selection" in dashboard
-    assert "type: custom:energy-custom-graph-card" in dashboard
+    assert "type: statistics-graph" in dashboard
     assert "type: tile" in dashboard
     assert "type: statistic" in dashboard
     assert "type: sections" in dashboard
