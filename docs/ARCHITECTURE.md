@@ -39,6 +39,9 @@ S-Miles Cloud is not used for runtime data collection.
 - Polls at the configured scan interval.
 - Defaults to 35 seconds and rejects values below 35 seconds.
 - Continues running through temporary device and network failures.
+- Persists same-day daily energy cache per config entry so a restart or reload
+  does not collapse daily energy sensors back to zero when the DTU reports a
+  temporary zero snapshot.
 
 ### Application
 
@@ -84,6 +87,8 @@ Vendor-specific fields should be retained only when they have a defined use.
 - Home Assistant Recorder unavailable: live sensors continue to update, history is handled by Home Assistant.
 - Clock issue: preserve received time and mark questionable observed timestamps.
 - Restart: resume collection without requiring manual cleanup.
+- Temporary zero daily-energy snapshots must not overwrite same-day cached
+  values once the integration has seen a valid non-zero reading for that day.
 
 ## Security Boundaries
 

@@ -43,7 +43,7 @@ def test_dashboard_example_references_expected_entities() -> None:
         for match in re.finditer(r"entity:\s*(sensor\.[A-Za-z0-9_]+)", dashboard)
     }
 
-    assert EXPECTED_ENTITIES <= entities
+    assert entities >= EXPECTED_ENTITIES
     assert len(entities) == len(EXPECTED_ENTITIES)
 
 

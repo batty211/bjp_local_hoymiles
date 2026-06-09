@@ -94,7 +94,10 @@ def test_parse_snapshot_clamps_negative_derived_energy() -> None:
 
     assert snapshot.solar_self_consumed_energy_kwh == 0.0
     assert snapshot.home_consumption_energy_kwh == 1874.437
-    assert any("solar self-consumed energy went negative" in message for message in messages)
+    assert any(
+        "solar self-consumed energy went negative" in message
+        for message in messages
+    )
 
 
 def test_parse_snapshot_clamps_negative_home_load_power() -> None:

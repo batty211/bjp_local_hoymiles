@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
@@ -22,9 +23,16 @@ from .const import (
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
 )
-from .parser import HoymilesSnapshot, preserve_daily_energy_for_same_day
+from .daily_energy import (
+    DailyEnergyCache,
+    deserialize_daily_energy_cache,
+    restore_daily_energy_cache,
+    serialize_daily_energy_cache,
+)
+from .parser import HoymilesSnapshot
 
 _LOGGER = logging.getLogger(__name__)
+_DAILY_ENERGY_STORE_VERSION = 1
 
 
 class BjpLocalHoymilesCoordinator(DataUpdateCoordinator[HoymilesSnapshot]):
@@ -43,6 +51,12 @@ class BjpLocalHoymilesCoordinator(DataUpdateCoordinator[HoymilesSnapshot]):
         )
         self.client = ReadOnlyHoymilesClient(host=host, port=port)
         self._timezone = _timezone_from_hass(hass)
+        self._daily_energy_store = Store(
+            hass,
+            _DAILY_ENERGY_STORE_VERSION,
+            f"{DOMAIN}.daily_energy_cache_{entry.entry_id}",
+        )
+        self._daily_energy_cache: DailyEnergyCache | None = None
 
         super().__init__(
             hass,
@@ -51,17 +65,35 @@ class BjpLocalHoymilesCoordinator(DataUpdateCoordinator[HoymilesSnapshot]):
             update_interval=timedelta(seconds=scan_interval),
         )
 
+    async def async_initialize(self) -> None:
+        """Load persisted daily energy cache before polling starts."""
+        self._daily_energy_cache = deserialize_daily_energy_cache(
+            await self._daily_energy_store.async_load(),
+        )
+
     async def _async_update_data(self) -> HoymilesSnapshot:
         """Fetch data from the DTU."""
         try:
             snapshot = await self.client.async_get_snapshot()
         except (CannotConnectError, InvalidResponseError) as err:
             raise UpdateFailed(str(err)) from err
-        return preserve_daily_energy_for_same_day(
+
+        restored_snapshot, updated_cache = restore_daily_energy_cache(
             snapshot,
-            self.data,
+            self._daily_energy_cache,
             self._timezone,
         )
+        if updated_cache != self._daily_energy_cache:
+            self._daily_energy_cache = updated_cache
+            if updated_cache is None:
+                return restored_snapshot
+            try:
+                await self._daily_energy_store.async_save(
+                    serialize_daily_energy_cache(updated_cache),
+                )
+            except Exception:  # pragma: no cover - best effort persistence
+                _LOGGER.exception("Failed to save daily energy cache")
+        return restored_snapshot
 
 
 def _timezone_from_hass(hass: HomeAssistant) -> tzinfo:

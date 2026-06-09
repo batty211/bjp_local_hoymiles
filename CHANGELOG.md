@@ -6,6 +6,20 @@ The project follows Semantic Versioning. For each GitHub release, copy the
 matching version section into the GitHub Release description so HACS can show
 the release notes to users.
 
+## [0.3.4] - 2026-06-09
+
+### Fixed
+
+- Preserved same-day daily energy values in a per-entry Home Assistant store
+  so DTU, inverter, and MPPT daily energy sensors no longer fall back to `0`
+  after HA restart, integration reload, or a temporary offline snapshot.
+
+### Changed
+
+- Restored daily energy from persistent cache when a snapshot for the same day
+  reports `None` or `0`, while still resetting the cache when the local day
+  changes.
+
 ## [0.3.3] - 2026-06-09
 
 ### Fixed
@@ -134,6 +148,7 @@ the release notes to users.
 - No control entities, custom services, or write-capable DTU operations.
 
 [0.3.3]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.2...v0.3.3
+[0.3.4]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.3...v0.3.4
 [0.3.2]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.2.3...v0.3.0
