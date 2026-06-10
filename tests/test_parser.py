@@ -74,8 +74,8 @@ def test_parse_snapshot_scales_payload_values() -> None:
     assert snapshot.dtu_power_w == 227.1
     assert snapshot.dtu_daily_energy_kwh == 10.62
     assert snapshot.lifetime_solar_energy_kwh == 15665.132
-    assert snapshot.solar_self_consumed_energy_kwh == 15128.704
-    assert snapshot.home_consumption_energy_kwh == 17003.141
+    assert snapshot.solar_self_consumed_energy_kwh == 10300.852
+    assert snapshot.home_consumption_energy_kwh == 29045.222
     assert len(snapshot.meters) == 1
     assert len(snapshot.inverters) == 2
     assert len(snapshot.mppts) == 8
@@ -87,8 +87,8 @@ def test_parse_snapshot_scales_payload_values() -> None:
     assert meter.voltage_v == 228.0
     assert meter.current_a == 8.85
     assert meter.power_factor == -0.938
-    assert meter.lifetime_exported_energy_kwh == 536.428
-    assert meter.lifetime_imported_energy_kwh == 1874.437
+    assert meter.lifetime_exported_energy_kwh == 5364.28
+    assert meter.lifetime_imported_energy_kwh == 18744.37
 
     assert snapshot.home_load_power_w == 1997.1
 
@@ -101,7 +101,7 @@ def test_parse_snapshot_clamps_negative_derived_energy() -> None:
         snapshot = load_parser().parse_snapshot(payload)
 
     assert snapshot.solar_self_consumed_energy_kwh == 0.0
-    assert snapshot.home_consumption_energy_kwh == 1874.437
+    assert snapshot.home_consumption_energy_kwh == 18744.37
     assert any(
         "solar self-consumed energy went negative" in message
         for message in messages
@@ -180,10 +180,10 @@ def test_preserve_meter_lifetime_keeps_same_serial_values() -> None:
 
     snapshot = parser.preserve_meter_lifetime_energy(current, previous)
 
-    assert snapshot.meters[0].lifetime_imported_energy_kwh == 1874.437
-    assert snapshot.meters[0].lifetime_exported_energy_kwh == 536.428
-    assert snapshot.solar_self_consumed_energy_kwh == 15128.704
-    assert snapshot.home_consumption_energy_kwh == 17003.141
+    assert snapshot.meters[0].lifetime_imported_energy_kwh == 18744.37
+    assert snapshot.meters[0].lifetime_exported_energy_kwh == 5364.28
+    assert snapshot.solar_self_consumed_energy_kwh == 10300.852
+    assert snapshot.home_consumption_energy_kwh == 29045.222
 
 
 def test_preserve_meter_lifetime_uses_current_positive_values() -> None:
@@ -196,8 +196,23 @@ def test_preserve_meter_lifetime_uses_current_positive_values() -> None:
 
     snapshot = parser.preserve_meter_lifetime_energy(current, previous)
 
-    assert snapshot.meters[0].lifetime_imported_energy_kwh == 1877.719
-    assert snapshot.meters[0].lifetime_exported_energy_kwh == 536.43
+    assert snapshot.meters[0].lifetime_imported_energy_kwh == 18777.19
+    assert snapshot.meters[0].lifetime_exported_energy_kwh == 5364.3
+
+
+def test_parse_meter_lifetime_delta_uses_ten_wh_units() -> None:
+    parser = load_parser()
+    previous = parser.parse_snapshot(load_payload())
+    payload = load_payload()
+    payload["meterData"][0]["energyTotalConsumed"] += 164
+    current = parser.parse_snapshot(payload)
+
+    delta = (
+        current.meters[0].lifetime_imported_energy_kwh
+        - previous.meters[0].lifetime_imported_energy_kwh
+    )
+
+    assert round(delta, 6) == 1.64
 
 
 def test_preserve_meter_lifetime_tracks_serials_separately() -> None:
@@ -240,8 +255,8 @@ def test_preserve_meter_lifetime_tracks_serials_separately() -> None:
     snapshot = parser.preserve_meter_lifetime_energy(current, previous)
 
     assert snapshot.meters[0].serial == "18417181655590"
-    assert snapshot.meters[0].lifetime_imported_energy_kwh == 1877.437
-    assert snapshot.meters[0].lifetime_exported_energy_kwh == 536.428
+    assert snapshot.meters[0].lifetime_imported_energy_kwh == 18774.37
+    assert snapshot.meters[0].lifetime_exported_energy_kwh == 5364.28
     assert snapshot.meters[1].serial == "18417181655591"
     assert snapshot.meters[1].lifetime_imported_energy_kwh == 0.0
     assert snapshot.meters[1].lifetime_exported_energy_kwh == 0.0
@@ -254,8 +269,8 @@ def test_preserve_meter_lifetime_keeps_derived_energy_from_bouncing() -> None:
 
     snapshot = parser.preserve_meter_lifetime_energy(current, previous)
 
-    assert snapshot.solar_self_consumed_energy_kwh == 15128.704
-    assert snapshot.home_consumption_energy_kwh == 17003.141
+    assert snapshot.solar_self_consumed_energy_kwh == 10300.852
+    assert snapshot.home_consumption_energy_kwh == 29045.222
 
 
 def test_parse_snapshot_groups_mppt_energy_by_inverter() -> None:

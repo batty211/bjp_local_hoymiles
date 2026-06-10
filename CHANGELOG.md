@@ -6,6 +6,23 @@ The project follows Semantic Versioning. For each GitHub release, copy the
 matching version section into the GitHub Release description so HACS can show
 the release notes to users.
 
+## [0.3.7] - 2026-06-10
+
+### Fixed
+
+- Corrected DDSU666 lifetime grid import/export normalization from a `1 Wh`
+  assumption to the observed `10 Wh` raw unit, so cumulative meter energy now
+  aligns with S-Miles Cloud totals and Utility Meter deltas.
+- Migrated persisted meter lifetime cache values from the previous scale once,
+  preventing a zero first poll after upgrade from restoring an incorrect total.
+
+### Changed
+
+- Recomputed solar self-consumption and total home consumption from the
+  corrected meter lifetime values.
+- Documented the one-time Home Assistant statistics and Utility Meter cleanup
+  required when upgrading existing installations.
+
 ## [0.3.6] - 2026-06-09
 
 ### Fixed
@@ -179,6 +196,7 @@ the release notes to users.
 
 - No control entities, custom services, or write-capable DTU operations.
 
+[0.3.7]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.5...v0.3.6
 [0.3.3]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.2...v0.3.3
 [0.3.5]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.4...v0.3.5

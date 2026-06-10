@@ -7,6 +7,9 @@ from typing import Any
 
 from .parser import HoymilesSnapshot, MeterData, rebuild_meter_derived_energy
 
+CACHE_FORMAT_VERSION = 2
+LEGACY_METER_SCALE_MULTIPLIER = 10.0
+
 
 @dataclass(frozen=True, slots=True)
 class MeterLifetimeCache:
@@ -72,6 +75,7 @@ def restore_meter_lifetime_cache(
 def serialize_meter_lifetime_cache(cache: MeterLifetimeCache) -> dict[str, Any]:
     """Convert a cache object into JSON-serializable storage data."""
     return {
+        "format_version": CACHE_FORMAT_VERSION,
         "meter_lifetime_imported_energy_kwh": cache.meter_lifetime_imported_energy_kwh,
         "meter_lifetime_exported_energy_kwh": cache.meter_lifetime_exported_energy_kwh,
     }
@@ -82,6 +86,13 @@ def deserialize_meter_lifetime_cache(
 ) -> MeterLifetimeCache | None:
     """Convert stored JSON data back into a cache object."""
     if not data:
+        return None
+
+    format_version = data.get("format_version", 1)
+    if not isinstance(format_version, int) or format_version not in (
+        1,
+        CACHE_FORMAT_VERSION,
+    ):
         return None
 
     imported_cache = _deserialize_cache_map(
@@ -96,10 +107,23 @@ def deserialize_meter_lifetime_cache(
     if not imported_cache and not exported_cache:
         return None
 
+    if format_version == 1:
+        imported_cache = _migrate_legacy_scale(imported_cache)
+        exported_cache = _migrate_legacy_scale(exported_cache)
+
     return MeterLifetimeCache(
         meter_lifetime_imported_energy_kwh=imported_cache,
         meter_lifetime_exported_energy_kwh=exported_cache,
     )
+
+
+def meter_lifetime_cache_needs_migration(
+    data: dict[str, Any] | None,
+) -> bool:
+    """Return whether valid legacy cache data needs the v2 scale marker."""
+    if not data:
+        return False
+    return data.get("format_version", 1) != CACHE_FORMAT_VERSION
 
 
 def _restore_value(
@@ -149,3 +173,11 @@ def _coerce_float(value: Any) -> float | None:
     except (TypeError, ValueError):
         return None
     return parsed
+
+
+def _migrate_legacy_scale(cache: dict[str, float]) -> dict[str, float]:
+    """Convert v1 cache values from the incorrect 1 Wh scale to 10 Wh."""
+    return {
+        key: round(value * LEGACY_METER_SCALE_MULTIPLIER, 6)
+        for key, value in cache.items()
+    }

@@ -458,9 +458,9 @@ def _parse_meter(item: Mapping[str, Any]) -> MeterData:
         voltage_v=_number(item.get("voltagePhaseA"), 100),
         current_a=_number(item.get("currentPhaseA"), 100),
         power_factor=_number(item.get("powerFactorTotal"), 1000),
-        lifetime_exported_energy_kwh=_number(item.get("energyTotalPower"), 1000),
+        lifetime_exported_energy_kwh=_number(item.get("energyTotalPower"), 100),
         lifetime_imported_energy_kwh=_number(
-            item.get("energyTotalConsumed"), 1000
+            item.get("energyTotalConsumed"), 100
         ),
         fault_code=_int(item.get("faultCode")),
     )

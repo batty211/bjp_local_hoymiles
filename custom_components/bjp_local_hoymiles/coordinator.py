@@ -32,6 +32,7 @@ from .daily_energy import (
 from .meter_lifetime import (
     MeterLifetimeCache,
     deserialize_meter_lifetime_cache,
+    meter_lifetime_cache_needs_migration,
     restore_meter_lifetime_cache,
     serialize_meter_lifetime_cache,
 )
@@ -83,9 +84,20 @@ class BjpLocalHoymilesCoordinator(DataUpdateCoordinator[HoymilesSnapshot]):
         self._daily_energy_cache = deserialize_daily_energy_cache(
             await self._daily_energy_store.async_load(),
         )
+        stored_meter_cache = await self._meter_lifetime_store.async_load()
         self._meter_lifetime_cache = deserialize_meter_lifetime_cache(
-            await self._meter_lifetime_store.async_load(),
+            stored_meter_cache,
         )
+        if (
+            self._meter_lifetime_cache is not None
+            and meter_lifetime_cache_needs_migration(stored_meter_cache)
+        ):
+            try:
+                await self._meter_lifetime_store.async_save(
+                    serialize_meter_lifetime_cache(self._meter_lifetime_cache),
+                )
+            except Exception:  # pragma: no cover - best effort persistence
+                _LOGGER.exception("Failed to migrate meter lifetime cache")
 
     async def _async_update_data(self) -> HoymilesSnapshot:
         """Fetch data from the DTU."""

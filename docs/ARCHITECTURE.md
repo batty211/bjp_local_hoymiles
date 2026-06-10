@@ -52,6 +52,9 @@ S-Miles Cloud is not used for runtime data collection.
 ### Application
 
 - Applies domain rules and unit normalization.
+- Normalizes DDSU666 meter lifetime import/export raw counters as `10 Wh` per
+  raw unit while DTU, inverter, and MPPT energy counters remain `1 Wh` per raw
+  unit.
 - Provides latest status and historical queries.
 - Does not depend on transport-specific device payloads.
 

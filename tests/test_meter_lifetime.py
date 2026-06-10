@@ -87,10 +87,10 @@ def test_restore_meter_lifetime_cache_preserves_values_after_restart() -> None:
         cache,
     )
 
-    assert restored.meters[0].lifetime_imported_energy_kwh == 1874.437
-    assert restored.meters[0].lifetime_exported_energy_kwh == 536.428
-    assert restored.solar_self_consumed_energy_kwh == 15128.704
-    assert restored.home_consumption_energy_kwh == 17003.141
+    assert restored.meters[0].lifetime_imported_energy_kwh == 18744.37
+    assert restored.meters[0].lifetime_exported_energy_kwh == 5364.28
+    assert restored.solar_self_consumed_energy_kwh == 10300.852
+    assert restored.home_consumption_energy_kwh == 29045.222
     assert updated_cache == cache
 
 
@@ -101,8 +101,8 @@ def test_restore_meter_lifetime_cache_tracks_current_positive_values() -> None:
     payload["meterData"][0]["energyTotalPower"] = 536430
     current = parser.parse_snapshot(payload)
     cache = meter_lifetime.MeterLifetimeCache(
-        meter_lifetime_imported_energy_kwh={"18410000000001": 1874.437},
-        meter_lifetime_exported_energy_kwh={"18410000000001": 536.428},
+        meter_lifetime_imported_energy_kwh={"18410000000001": 18744.37},
+        meter_lifetime_exported_energy_kwh={"18410000000001": 5364.28},
     )
 
     restored, updated_cache = meter_lifetime.restore_meter_lifetime_cache(
@@ -110,19 +110,19 @@ def test_restore_meter_lifetime_cache_tracks_current_positive_values() -> None:
         cache,
     )
 
-    assert restored.meters[0].lifetime_imported_energy_kwh == 1877.719
-    assert restored.meters[0].lifetime_exported_energy_kwh == 536.43
+    assert restored.meters[0].lifetime_imported_energy_kwh == 18777.19
+    assert restored.meters[0].lifetime_exported_energy_kwh == 5364.3
     assert updated_cache == meter_lifetime.MeterLifetimeCache(
-        meter_lifetime_imported_energy_kwh={"18410000000001": 1877.719},
-        meter_lifetime_exported_energy_kwh={"18410000000001": 536.43},
+        meter_lifetime_imported_energy_kwh={"18410000000001": 18777.19},
+        meter_lifetime_exported_energy_kwh={"18410000000001": 5364.3},
     )
 
 
 def test_meter_lifetime_cache_round_trips_through_storage_format() -> None:
     meter_lifetime, _ = load_meter_lifetime()
     cache = meter_lifetime.MeterLifetimeCache(
-        meter_lifetime_imported_energy_kwh={"18410000000001": 1874.437},
-        meter_lifetime_exported_energy_kwh={"18410000000001": 536.428},
+        meter_lifetime_imported_energy_kwh={"18410000000001": 18744.37},
+        meter_lifetime_exported_energy_kwh={"18410000000001": 5364.28},
     )
 
     restored = meter_lifetime.deserialize_meter_lifetime_cache(
@@ -130,3 +130,57 @@ def test_meter_lifetime_cache_round_trips_through_storage_format() -> None:
     )
 
     assert restored == cache
+
+
+def test_meter_lifetime_cache_migrates_legacy_scale_once() -> None:
+    meter_lifetime, _ = load_meter_lifetime()
+
+    migrated = meter_lifetime.deserialize_meter_lifetime_cache(
+        {
+            "meter_lifetime_imported_energy_kwh": {
+                "18410000000001": 1878.897
+            },
+            "meter_lifetime_exported_energy_kwh": {
+                "18410000000001": 536.84
+            },
+        }
+    )
+
+    assert migrated == meter_lifetime.MeterLifetimeCache(
+        meter_lifetime_imported_energy_kwh={"18410000000001": 18788.97},
+        meter_lifetime_exported_energy_kwh={"18410000000001": 5368.4},
+    )
+    assert meter_lifetime.meter_lifetime_cache_needs_migration(
+        {
+            "meter_lifetime_imported_energy_kwh": {
+                "18410000000001": 1878.897
+            }
+        }
+    )
+
+    serialized = meter_lifetime.serialize_meter_lifetime_cache(migrated)
+    assert serialized["format_version"] == meter_lifetime.CACHE_FORMAT_VERSION
+    assert not meter_lifetime.meter_lifetime_cache_needs_migration(serialized)
+    assert meter_lifetime.deserialize_meter_lifetime_cache(serialized) == migrated
+
+
+def test_legacy_cache_restores_correct_scale_on_zero_first_poll() -> None:
+    meter_lifetime, parser = load_meter_lifetime()
+    current = parser.parse_snapshot(zero_meter_payload())
+    migrated = meter_lifetime.deserialize_meter_lifetime_cache(
+        {
+            "meter_lifetime_imported_energy_kwh": {
+                "18410000000001": 1874.437
+            },
+            "meter_lifetime_exported_energy_kwh": {
+                "18410000000001": 536.428
+            },
+        }
+    )
+
+    restored, _ = meter_lifetime.restore_meter_lifetime_cache(current, migrated)
+
+    assert restored.meters[0].lifetime_imported_energy_kwh == 18744.37
+    assert restored.meters[0].lifetime_exported_energy_kwh == 5364.28
+    assert restored.solar_self_consumed_energy_kwh == 10300.852
+    assert restored.home_consumption_energy_kwh == 29045.222
