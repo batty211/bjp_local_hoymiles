@@ -30,11 +30,46 @@
     }
   },
   "options": {
+    "error": {
+      "invalid_billing_time": "Enter the billing reset time in HH:MM format.",
+      "invalid_billing_cron": "Enter a valid 5-field cron expression.",
+      "invalid_billing_mode": "Select a billing cycle mode.",
+      "invalid_billing_reset_day": "Choose a billing reset day between 1 and 28, or last day."
+    },
     "step": {
       "init": {
         "title": "BJP Local Hoymiles options",
+        "description": "Adjust polling and optionally open a billing-cycle wizard for manual Utility Meter setup.",
         "data": {
-          "scan_interval": "Scan interval"
+          "scan_interval": "Scan interval",
+          "billing_cycle_enabled": "Billing cycle wizard"
+        }
+      },
+      "billing": {
+        "title": "Billing cycle wizard",
+        "description": "Choose a recurring monthly reset instant. The wizard will generate Utility Meter settings for manual helper creation.",
+        "data": {
+          "billing_cycle_mode": "Billing cycle mode",
+          "billing_reset_day": "Billing reset day",
+          "billing_reset_time": "Billing reset time",
+          "billing_cron": "Advanced cron"
+        }
+      },
+      "review": {
+        "title": "Billing helper recipe",
+        "description": "{review_text}"
+      }
+    },
+    "selector": {
+      "billing_cycle_mode": {
+        "options": {
+          "simple_monthly": "Simple monthly",
+          "advanced_cron": "Advanced cron"
+        }
+      },
+      "billing_reset_day": {
+        "options": {
+          "last_day": "Last day of month"
         }
       }
     }

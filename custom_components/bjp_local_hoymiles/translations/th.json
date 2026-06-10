@@ -29,11 +29,46 @@
     }
   },
   "options": {
+    "error": {
+      "invalid_billing_time": "กรอกเวลา reset รอบบิลเป็นรูปแบบ HH:MM",
+      "invalid_billing_cron": "กรอก cron 5 ช่องให้ถูกต้อง",
+      "invalid_billing_mode": "เลือกโหมดรอบบิล",
+      "invalid_billing_reset_day": "เลือกระหว่างวันที่ 1 ถึง 28 หรือวันสุดท้ายของเดือน"
+    },
     "step": {
       "init": {
         "title": "ตัวเลือก BJP Local Hoymiles",
+        "description": "ปรับช่วงเวลาอ่านข้อมูล และเปิด billing-cycle wizard เพื่อเตรียมค่าของ Utility Meter แบบสร้างเองภายหลังได้",
         "data": {
-          "scan_interval": "ช่วงเวลาอ่านข้อมูล"
+          "scan_interval": "ช่วงเวลาอ่านข้อมูล",
+          "billing_cycle_enabled": "Billing cycle wizard"
+        }
+      },
+      "billing": {
+        "title": "Billing cycle wizard",
+        "description": "กำหนดเวลาที่ให้ reset รอบบิลแบบวนซ้ำรายเดือน แล้วระบบจะแสดงค่าที่ต้องใช้ตอนสร้าง Utility Meter ด้วยตัวเอง",
+        "data": {
+          "billing_cycle_mode": "โหมดรอบบิล",
+          "billing_reset_day": "วัน reset รอบบิล",
+          "billing_reset_time": "เวลา reset รอบบิล",
+          "billing_cron": "Cron แบบกำหนดเอง"
+        }
+      },
+      "review": {
+        "title": "ค่าที่ใช้สร้าง billing helper",
+        "description": "{review_text}"
+      }
+    },
+    "selector": {
+      "billing_cycle_mode": {
+        "options": {
+          "simple_monthly": "รายเดือนแบบง่าย",
+          "advanced_cron": "Cron ขั้นสูง"
+        }
+      },
+      "billing_reset_day": {
+        "options": {
+          "last_day": "วันสุดท้ายของเดือน"
         }
       }
     }

@@ -9,15 +9,32 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_HOST
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers import entity_registry as er
 
+from .billing_wizard import (
+    BillingHelperRecipe,
+    BillingWizardError,
+    build_billing_cron,
+    build_review_text,
+    find_existing_utility_meter_helpers,
+)
 from .client import (
     CannotConnectError,
     InvalidResponseError,
     ReadOnlyHoymilesClient,
 )
 from .const import (
+    BILLING_CYCLE_MODE_ADVANCED_CRON,
+    BILLING_CYCLE_MODE_SIMPLE_MONTHLY,
+    BILLING_RESET_DAY_LAST,
+    CONF_BILLING_CRON,
+    CONF_BILLING_CYCLE_ENABLED,
+    CONF_BILLING_CYCLE_MODE,
+    CONF_BILLING_RESET_DAY,
+    CONF_BILLING_RESET_TIME,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
+    DEFAULT_BILLING_RESET_TIME,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
@@ -157,6 +174,8 @@ class BjpLocalHoymilesOptionsFlow(config_entries.OptionsFlow):
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         self._config_entry = config_entry
+        self._pending_options: dict[str, Any] = {}
+        self._review_text = ""
 
     async def async_step_init(
         self,
@@ -164,7 +183,10 @@ class BjpLocalHoymilesOptionsFlow(config_entries.OptionsFlow):
     ) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+            self._pending_options = self._merged_options(user_input)
+            if not user_input[CONF_BILLING_CYCLE_ENABLED]:
+                return self.async_create_entry(title="", data=self._pending_options)
+            return await self.async_step_billing()
 
         return self.async_show_form(
             step_id="init",
@@ -182,7 +204,168 @@ class BjpLocalHoymilesOptionsFlow(config_entries.OptionsFlow):
                     ): vol.All(
                         vol.Coerce(int),
                         vol.Range(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL),
-                    )
+                    ),
+                    vol.Required(
+                        CONF_BILLING_CYCLE_ENABLED,
+                        default=self._config_entry.options.get(
+                            CONF_BILLING_CYCLE_ENABLED,
+                            False,
+                        ),
+                    ): bool,
                 }
             ),
+        )
+
+    async def async_step_billing(
+        self,
+        user_input: dict[str, Any] | None = None,
+    ) -> FlowResult:
+        """Collect billing cycle settings for Utility Meter helper guidance."""
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            try:
+                cron = build_billing_cron(
+                    user_input[CONF_BILLING_CYCLE_MODE],
+                    user_input.get(CONF_BILLING_RESET_DAY, ""),
+                    user_input.get(CONF_BILLING_RESET_TIME, ""),
+                    user_input.get(CONF_BILLING_CRON, ""),
+                )
+            except BillingWizardError as err:
+                errors["base"] = str(err)
+            else:
+                self._pending_options = self._merged_options(
+                    {**user_input, CONF_BILLING_CRON: cron}
+                )
+                self._review_text = self._build_review_text(cron)
+                return await self.async_step_review()
+
+        defaults = (
+            self._merged_options(user_input)
+            if user_input is not None
+            else (self._pending_options or self._config_entry.options)
+        )
+        mode = defaults.get(
+            CONF_BILLING_CYCLE_MODE,
+            BILLING_CYCLE_MODE_SIMPLE_MONTHLY,
+        )
+        schema_fields: dict[Any, Any] = {
+            vol.Required(
+                CONF_BILLING_CYCLE_MODE,
+                default=mode,
+            ): vol.In(
+                [
+                    BILLING_CYCLE_MODE_SIMPLE_MONTHLY,
+                    BILLING_CYCLE_MODE_ADVANCED_CRON,
+                ]
+            ),
+        }
+
+        if mode == BILLING_CYCLE_MODE_SIMPLE_MONTHLY:
+            schema_fields[
+                vol.Required(
+                    CONF_BILLING_RESET_DAY,
+                    default=defaults.get(CONF_BILLING_RESET_DAY, "1"),
+                )
+            ] = vol.In([*(str(day) for day in range(1, 29)), BILLING_RESET_DAY_LAST])
+            schema_fields[
+                vol.Required(
+                    CONF_BILLING_RESET_TIME,
+                    default=defaults.get(
+                        CONF_BILLING_RESET_TIME,
+                        DEFAULT_BILLING_RESET_TIME,
+                    ),
+                )
+            ] = str
+        else:
+            schema_fields[
+                vol.Required(
+                    CONF_BILLING_CRON,
+                    default=defaults.get(CONF_BILLING_CRON, "0 0 1 * *"),
+                )
+            ] = str
+
+        return self.async_show_form(
+            step_id="billing",
+            data_schema=vol.Schema(schema_fields),
+            errors=errors,
+        )
+
+    async def async_step_review(
+        self,
+        user_input: dict[str, Any] | None = None,
+    ) -> FlowResult:
+        """Show the Utility Meter helper recipe generated from billing options."""
+        if user_input is not None:
+            return self.async_create_entry(title="", data=self._pending_options)
+
+        return self.async_show_form(
+            step_id="review",
+            data_schema=vol.Schema({}),
+            description_placeholders={"review_text": self._review_text},
+        )
+
+    def _merged_options(self, updates: dict[str, Any]) -> dict[str, Any]:
+        merged = dict(self._config_entry.options)
+        merged.update(updates)
+        return merged
+
+    def _build_review_text(self, cron: str) -> str:
+        import_source, export_source = self._resolve_billing_source_entities()
+        utility_entries = self.hass.config_entries.async_entries("utility_meter")
+        import_recipe = BillingHelperRecipe(
+            label="From Grid helper",
+            source_entity_id=import_source,
+            cron=cron,
+            existing_helpers=find_existing_utility_meter_helpers(
+                utility_entries,
+                import_source,
+            ),
+        )
+        export_recipe = BillingHelperRecipe(
+            label="To Grid helper",
+            source_entity_id=export_source,
+            cron=cron,
+            existing_helpers=find_existing_utility_meter_helpers(
+                utility_entries,
+                export_source,
+            ),
+        )
+        return build_review_text(import_recipe, export_recipe)
+
+    def _resolve_billing_source_entities(self) -> tuple[str, str]:
+        entity_registry = er.async_get(self.hass)
+        import_source: str | None = None
+        export_source: str | None = None
+
+        for entity_entry in entity_registry.entities.values():
+            if entity_entry.config_entry_id != self._config_entry.entry_id:
+                continue
+            if entity_entry.domain != "sensor":
+                continue
+            if entity_entry.unique_id.endswith("_lifetime_imported_energy"):
+                import_source = entity_entry.entity_id
+            if entity_entry.unique_id.endswith("_lifetime_exported_energy"):
+                export_source = entity_entry.entity_id
+
+        if import_source and export_source:
+            return import_source, export_source
+
+        coordinator = self.hass.data.get(DOMAIN, {}).get(self._config_entry.entry_id)
+        if (
+            coordinator is not None
+            and getattr(coordinator, "data", None)
+            and coordinator.data.meters
+        ):
+            meter_serial = coordinator.data.meters[0].serial
+            return (
+                import_source
+                or f"sensor.hoymiles_meter_{meter_serial}_lifetime_imported_energy",
+                export_source
+                or f"sensor.hoymiles_meter_{meter_serial}_lifetime_exported_energy",
+            )
+
+        return (
+            import_source or "sensor.hoymiles_meter_<serial>_lifetime_imported_energy",
+            export_source or "sensor.hoymiles_meter_<serial>_lifetime_exported_energy",
         )

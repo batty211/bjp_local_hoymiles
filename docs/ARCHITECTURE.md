@@ -65,6 +65,9 @@ S-Miles Cloud is not used for runtime data collection.
 - Exposes cumulative grid import, grid export, solar production, solar
   self-consumption, and total home consumption sensors for Energy Dashboard
   selection.
+- Stores billing-cycle preferences in the integration options flow and
+  generates manual Utility Meter helper recipes without auto-managing helper
+  config entries.
 - Distinguishes zero production from missing or stale data.
 - Uses explicit units and local timezone.
 
@@ -119,7 +122,8 @@ Expected categories:
 
 - host and port
 - polling interval and timeouts
-- Home Assistant options flow stores scan interval
+- Home Assistant options flow stores scan interval plus optional billing-cycle
+  reset settings used to generate Utility Meter helper guidance
 
 ## Deployment
 

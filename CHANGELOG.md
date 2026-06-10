@@ -6,6 +6,22 @@ The project follows Semantic Versioning. For each GitHub release, copy the
 matching version section into the GitHub Release description so HACS can show
 the release notes to users.
 
+## [0.3.8] - 2026-06-10
+
+### Added
+
+- Added a post-setup billing cycle wizard in the integration options flow that
+  generates the exact `utility_meter` helper settings for `From Grid` and
+  `To Grid` without auto-creating helpers.
+
+### Changed
+
+- Stored billing-cycle preferences in integration options so each Home
+  Assistant installation can keep its own reset day, reset time, or advanced
+  cron schedule.
+- Documented why Utility Meter helpers stay user-managed after HACS install or
+  update, plus how to map the wizard output into Home Assistant helper fields.
+
 ## [0.3.7] - 2026-06-10
 
 ### Fixed
@@ -196,6 +212,7 @@ the release notes to users.
 
 - No control entities, custom services, or write-capable DTU operations.
 
+[0.3.8]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.7...v0.3.8
 [0.3.7]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.5...v0.3.6
 [0.3.3]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.2...v0.3.3
