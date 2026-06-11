@@ -6,6 +6,20 @@ The project follows Semantic Versioning. For each GitHub release, copy the
 matching version section into the GitHub Release description so HACS can show
 the release notes to users.
 
+## [0.3.9] - 2026-06-11
+
+### Fixed
+
+- Preserved inverter lifetime and MPPT lifetime values across transient zero
+  snapshots in the live coordinator session so midnight polling gaps no longer
+  create false resets in inverter-derived long-term statistics.
+
+### Changed
+
+- Recomputed inverter lifetime totals from restored MPPT values before
+  publishing snapshots, keeping lifetime solar energy, solar self-consumed
+  energy, and home consumption aligned through the transient gap.
+
 ## [0.3.8] - 2026-06-10
 
 ### Added
@@ -213,6 +227,7 @@ the release notes to users.
 - No control entities, custom services, or write-capable DTU operations.
 
 [0.3.8]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.7...v0.3.8
+[0.3.9]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.8...v0.3.9
 [0.3.7]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.5...v0.3.6
 [0.3.3]: https://github.com/bordin/bjp_local_hoymiles/compare/v0.3.2...v0.3.3

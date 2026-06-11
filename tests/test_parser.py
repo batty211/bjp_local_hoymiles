@@ -47,6 +47,13 @@ def zero_meter_payload() -> dict:
     return payload
 
 
+def zero_inverter_lifetime_payload() -> dict:
+    payload = load_payload()
+    for mppt in payload["pvData"]:
+        mppt["energyTotal"] = 0
+    return payload
+
+
 @contextmanager
 def capture_parser_warnings() -> list[str]:
     logger = logging.getLogger("bjp_local_hoymiles_parser")
@@ -269,6 +276,33 @@ def test_preserve_meter_lifetime_keeps_derived_energy_from_bouncing() -> None:
 
     snapshot = parser.preserve_meter_lifetime_energy(current, previous)
 
+    assert snapshot.solar_self_consumed_energy_kwh == 10300.852
+    assert snapshot.home_consumption_energy_kwh == 29045.222
+
+
+def test_preserve_inverter_lifetime_keeps_same_serial_values() -> None:
+    parser = load_parser()
+    previous = parser.parse_snapshot(load_payload())
+    current = parser.parse_snapshot(zero_inverter_lifetime_payload())
+
+    snapshot = parser.preserve_inverter_lifetime_energy(current, previous)
+
+    assert snapshot.lifetime_solar_energy_kwh == 15665.132
+    assert snapshot.inverters[0].lifetime_energy_kwh == 7844.197
+    assert snapshot.inverters[1].lifetime_energy_kwh == 7820.935
+    assert snapshot.mppts[0].lifetime_energy_kwh == 1962.413
+    assert snapshot.mppts[1].lifetime_energy_kwh == 1950.607
+
+
+def test_preserve_inverter_lifetime_keeps_derived_energy_from_bouncing() -> None:
+    parser = load_parser()
+    previous = parser.parse_snapshot(load_payload())
+    current = parser.parse_snapshot(zero_inverter_lifetime_payload())
+
+    snapshot = parser.preserve_inverter_lifetime_energy(current, previous)
+    snapshot = parser.preserve_meter_lifetime_energy(snapshot, previous)
+
+    assert snapshot.lifetime_solar_energy_kwh == 15665.132
     assert snapshot.solar_self_consumed_energy_kwh == 10300.852
     assert snapshot.home_consumption_energy_kwh == 29045.222
 

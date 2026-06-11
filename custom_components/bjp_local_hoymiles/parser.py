@@ -316,6 +316,74 @@ def preserve_meter_lifetime_energy(
     return rebuild_meter_derived_energy(snapshot, meters)
 
 
+def preserve_inverter_lifetime_energy(
+    snapshot: HoymilesSnapshot,
+    previous: HoymilesSnapshot | None,
+) -> HoymilesSnapshot:
+    """Keep inverter and MPPT lifetime energy from dropping to zero."""
+    if previous is None:
+        return snapshot
+
+    previous_inverters = {item.serial: item for item in previous.inverters}
+    previous_mppts = {
+        (item.inverter_serial, item.port_number): item for item in previous.mppts
+    }
+
+    mppts = tuple(
+        replace(
+            mppt,
+            lifetime_energy_kwh=_preserved_lifetime_energy(
+                mppt.lifetime_energy_kwh,
+                _previous_mppt_lifetime_energy(
+                    previous_mppts,
+                    mppt.inverter_serial,
+                    mppt.port_number,
+                ),
+            ),
+        )
+        for mppt in snapshot.mppts
+    )
+
+    lifetime_by_inverter: dict[str, float] = {}
+    for mppt in mppts:
+        if mppt.lifetime_energy_kwh is None:
+            continue
+        lifetime_by_inverter[mppt.inverter_serial] = (
+            lifetime_by_inverter.get(mppt.inverter_serial, 0.0)
+            + mppt.lifetime_energy_kwh
+        )
+
+    total_lifetime_solar_energy_kwh = (
+        round(sum(lifetime_by_inverter.values()), 6)
+        if lifetime_by_inverter
+        else None
+    )
+
+    inverters = tuple(
+        replace(
+            inverter,
+            lifetime_energy_kwh=_restored_inverter_lifetime_energy(
+                current=lifetime_by_inverter.get(inverter.serial),
+                previous=_previous_inverter_lifetime_energy(
+                    previous_inverters,
+                    inverter.serial,
+                ),
+            ),
+        )
+        for inverter in snapshot.inverters
+    )
+
+    return replace(
+        snapshot,
+        lifetime_solar_energy_kwh=_restored_inverter_lifetime_energy(
+            current=total_lifetime_solar_energy_kwh,
+            previous=previous.lifetime_solar_energy_kwh,
+        ),
+        inverters=inverters,
+        mppts=mppts,
+    )
+
+
 def rebuild_meter_derived_energy(
     snapshot: HoymilesSnapshot,
     meters: tuple[MeterData, ...],
@@ -435,6 +503,38 @@ def _previous_meter_lifetime_energy(
     if previous is None:
         return None
     return getattr(previous, attribute)
+
+
+def _previous_inverter_lifetime_energy(
+    previous_inverters: Mapping[str, InverterData],
+    serial: str,
+) -> float | None:
+    previous = previous_inverters.get(serial)
+    if previous is None:
+        return None
+    return previous.lifetime_energy_kwh
+
+
+def _previous_mppt_lifetime_energy(
+    previous_mppts: Mapping[tuple[str, int], MpptData],
+    inverter_serial: str,
+    port_number: int,
+) -> float | None:
+    previous = previous_mppts.get((inverter_serial, port_number))
+    if previous is None:
+        return None
+    return previous.lifetime_energy_kwh
+
+
+def _restored_inverter_lifetime_energy(
+    current: float | None,
+    previous: float | None,
+) -> float | None:
+    if current is not None and current > 0:
+        return current
+    if previous is not None and previous > 0:
+        return previous
+    return current
 
 
 def _parse_meter(item: Mapping[str, Any]) -> MeterData:
