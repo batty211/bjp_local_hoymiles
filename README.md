@@ -68,9 +68,11 @@ sensor ตกกลับเป็น `0` หลัง HA restart, integration r
 ไม่ให้ค่า cumulative ของ Energy Dashboard หลุดเป็น `0` ตอนเริ่ม polling ใหม่หรือ
 หลัง integration reload
 
-ค่า inverter lifetime และ MPPT lifetime จะถูก preserve แบบ live session ด้วยเมื่อ
-DTU ส่ง `0` หรือ `None` ชั่วคราว เพื่อไม่ให้ cumulative totals ของ Home Assistant
-กระตุกตอนช่วงเปลี่ยนวันหรือ polling ผิดจังหวะ
+ค่า inverter lifetime และ MPPT lifetime จะถูก preserve แบบ live session และ cache
+ต่อ config entry ด้วยเมื่อ DTU ส่ง `0` หรือ `None` ชั่วคราว เพื่อไม่ให้
+`lifetime_solar_energy`, `solar_self_consumed_energy` และ
+`home_consumption_energy` กระตุกตอนช่วงเปลี่ยนวัน, หลัง restart/reload หรือช่วงที่
+polling ผิดจังหวะหลายครั้งติดกัน
 
 ### Billing cycle wizard
 

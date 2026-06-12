@@ -29,6 +29,12 @@ from .daily_energy import (
     restore_daily_energy_cache,
     serialize_daily_energy_cache,
 )
+from .inverter_lifetime import (
+    InverterLifetimeCache,
+    deserialize_inverter_lifetime_cache,
+    restore_inverter_lifetime_cache,
+    serialize_inverter_lifetime_cache,
+)
 from .meter_lifetime import (
     MeterLifetimeCache,
     deserialize_meter_lifetime_cache,
@@ -44,6 +50,7 @@ from .parser import (
 
 _LOGGER = logging.getLogger(__name__)
 _DAILY_ENERGY_STORE_VERSION = 1
+_INVERTER_LIFETIME_STORE_VERSION = 1
 _METER_LIFETIME_STORE_VERSION = 1
 
 
@@ -69,6 +76,12 @@ class BjpLocalHoymilesCoordinator(DataUpdateCoordinator[HoymilesSnapshot]):
             f"{DOMAIN}.daily_energy_cache_{entry.entry_id}",
         )
         self._daily_energy_cache: DailyEnergyCache | None = None
+        self._inverter_lifetime_store = Store(
+            hass,
+            _INVERTER_LIFETIME_STORE_VERSION,
+            f"{DOMAIN}.inverter_lifetime_cache_{entry.entry_id}",
+        )
+        self._inverter_lifetime_cache: InverterLifetimeCache | None = None
         self._meter_lifetime_store = Store(
             hass,
             _METER_LIFETIME_STORE_VERSION,
@@ -87,6 +100,9 @@ class BjpLocalHoymilesCoordinator(DataUpdateCoordinator[HoymilesSnapshot]):
         """Load persisted energy caches before polling starts."""
         self._daily_energy_cache = deserialize_daily_energy_cache(
             await self._daily_energy_store.async_load(),
+        )
+        self._inverter_lifetime_cache = deserialize_inverter_lifetime_cache(
+            await self._inverter_lifetime_store.async_load(),
         )
         stored_meter_cache = await self._meter_lifetime_store.async_load()
         self._meter_lifetime_cache = deserialize_meter_lifetime_cache(
@@ -119,6 +135,10 @@ class BjpLocalHoymilesCoordinator(DataUpdateCoordinator[HoymilesSnapshot]):
             restored_snapshot,
             self.data,
         )
+        restored_snapshot, updated_inverter_cache = restore_inverter_lifetime_cache(
+            restored_snapshot,
+            self._inverter_lifetime_cache,
+        )
         restored_snapshot = preserve_meter_lifetime_energy(
             restored_snapshot,
             self.data,
@@ -136,6 +156,15 @@ class BjpLocalHoymilesCoordinator(DataUpdateCoordinator[HoymilesSnapshot]):
                     )
                 except Exception:  # pragma: no cover - best effort persistence
                     _LOGGER.exception("Failed to save daily energy cache")
+        if updated_inverter_cache != self._inverter_lifetime_cache:
+            self._inverter_lifetime_cache = updated_inverter_cache
+            if updated_inverter_cache is not None:
+                try:
+                    await self._inverter_lifetime_store.async_save(
+                        serialize_inverter_lifetime_cache(updated_inverter_cache),
+                    )
+                except Exception:  # pragma: no cover - best effort persistence
+                    _LOGGER.exception("Failed to save inverter lifetime cache")
         if updated_meter_cache != self._meter_lifetime_cache:
             self._meter_lifetime_cache = updated_meter_cache
             if updated_meter_cache is not None:

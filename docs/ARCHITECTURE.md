@@ -45,6 +45,9 @@ S-Miles Cloud is not used for runtime data collection.
 - Preserves inverter and MPPT lifetime energy within the live coordinator
   session so a temporary zero snapshot does not collapse inverter-derived
   cumulative totals at day boundaries.
+- Persists MPPT lifetime energy cache per config entry so restart, reload, or
+  repeated zero snapshots do not collapse inverter-derived cumulative totals
+  before the DTU recovers.
 - Preserves meter lifetime import/export values for the same meter serial
   during transient zero snapshots, then recomputes derived cumulative energy
   from the preserved totals before publishing the snapshot.
@@ -110,6 +113,9 @@ Vendor-specific fields should be retained only when they have a defined use.
 - Temporary zero inverter or MPPT lifetime snapshots must not overwrite the
   previous non-zero value for the same live coordinator session, and derived
   inverter cumulative energy must be recomputed after restoration.
+- Temporary zero inverter or MPPT lifetime snapshots on the first successful
+  poll after a restart must be restored from the persisted per-entry cache when
+  available.
 - Temporary zero meter lifetime snapshots on the first successful poll after a
   restart must be restored from the persisted per-entry cache when available.
 

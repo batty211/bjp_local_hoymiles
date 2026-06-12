@@ -6,6 +6,21 @@ The project follows Semantic Versioning. For each GitHub release, copy the
 matching version section into the GitHub Release description so HACS can show
 the release notes to users.
 
+## [0.3.10] - 2026-06-13
+
+### Fixed
+
+- Persisted inverter and MPPT lifetime cache values across restart and reload
+  gaps so `lifetime_solar_energy`, `solar_self_consumed_energy`, and
+  `home_consumption_energy` no longer drop to the grid-import baseline when the
+  DTU reports transient zero lifetime totals.
+
+### Changed
+
+- Rebuilt inverter lifetime totals and cumulative derived energy after applying
+  the persisted MPPT lifetime cache, keeping Energy Dashboard statistics
+  aligned with the restored values.
+
 ## [0.3.9] - 2026-06-11
 
 ### Fixed
